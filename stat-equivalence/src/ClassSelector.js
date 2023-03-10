@@ -4,10 +4,10 @@ export default function ClassSelector({ classes, selectedClass }) {
         selectedClass = e.target.value;
     }
 
-    let options = classes.map(c => <option value={c}>{c}</option> );
+    let options = classes.map(c => <option key={c} value={c}>{c}</option> );
 
     return(
-        <select class="form-control" name="class" id="class" onChange={onDropdownSelected}>
+        <select id="Class-Selector" onChange={onDropdownSelected}>
             {options}
         </select>
     );

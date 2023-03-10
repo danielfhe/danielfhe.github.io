@@ -1,11 +1,12 @@
 import { useState } from 'react';
 
-export default function StatBox({ statDescription, stat }) {
+export default function StatBox({ statDescription: statName, stat }) {
     const [name, setName] = useState("");
 
     return (
-        <label>{statDescription}:
-            <input type="text" value={stat} onChange={(e) => setName(e.target.value)}/>
-        </label>
+        <>
+            <label>{statName}</label>
+            <input className="Stat-Box" type="number" value={stat} onChange={(e) => setName(e.target.value)}/>
+        </>
     );
 }

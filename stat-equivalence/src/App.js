@@ -2,6 +2,9 @@ import './App.css';
 import HeadingBar from './HeadingBar.js';
 import StatBox from './StatBox.js';
 import ClassSelector from './ClassSelector.js';
+import Container from 'react-bootstrap/esm/Container';
+import Col from 'react-bootstrap/Col';
+import Row from 'react-bootstrap/Row';
 
 function App() {
   let classes = [
@@ -64,30 +67,48 @@ function App() {
 
   return (
     <div className="App">
-      <HeadingBar/>
-      <ClassSelector classes={classes} selectedClass={selectedClass}/>
-      <StatBox statDescription={'HP'} stat={''}/>
-      <StatBox statDescription={'MP'} stat={''}/>
-      <StatBox statDescription={'STR'} stat={stats.str}/>
-      <StatBox statDescription={'DEX'} stat={stats.dex}/>
-      <StatBox statDescription={'LUK'} stat={stats.luk}/>
-      <StatBox statDescription={'INT'} stat={stats.int}/>
-      <StatBox statDescription={'Damage %'} stat={''}/>
-      <StatBox statDescription={'Final Damage'} stat={''}/>
-      <StatBox statDescription={'Ignore Enemy Defense'} stat={''}/>
-      <StatBox statDescription={'Critical Rate'} stat={''}/>
-      <StatBox statDescription={'Critical Damage'} stat={''}/>
-      <StatBox statDescription={'Boss Damage'} stat={''}/>
-      <StatBox statDescription={'Buff Duration'} stat={''}/>
-      <StatBox statDescription={'Item Drop Rate'} stat={''}/>
-      <StatBox statDescription={'Mesos Obtained'} stat={''}/>
-      <StatBox statDescription={'Status Resistance'} stat={''}/>
-      <StatBox statDescription={'Defense'} stat={''}/>
-      <StatBox statDescription={'Speed'} stat={''}/>
-      <StatBox statDescription={'Jump'} stat={''}/>
-      <StatBox statDescription={'Knockback Resistance'} stat={''}/>
-      <StatBox statDescription={'Star Force'} stat={''}/>
-      <StatBox statDescription={'Arcane Power'} stat={''}/>
+      <Container><HeadingBar/></Container>
+      <div className="App-Body">
+        <Container>
+          <Row>
+            <Col><label>Class</label><ClassSelector classes={classes} selectedClass={selectedClass}/></Col>
+            <Col><StatBox statDescription={'Level'} stat={''}/></Col>
+            <Col><StatBox statDescription={'HP'} stat={''}/></Col>
+            <Col><StatBox statDescription={'MP'} stat={''}/></Col>
+          </Row>
+        </Container>
+        <Container>
+          <Row>
+            <Col><StatBox statDescription={'STR'} stat={stats.str}/></Col>
+            <Col><StatBox statDescription={'DEX'} stat={stats.dex}/></Col>
+            <Col><StatBox statDescription={'LUK'} stat={stats.luk}/></Col>
+            <Col><StatBox statDescription={'INT'} stat={stats.int}/></Col>
+          </Row>
+        </Container>
+        <br/>
+        <Container>
+          <Row>
+            <StatBox statDescription={'Damage %'} stat={''}/>
+            <StatBox statDescription={'Final Damage'} stat={''}/>
+            <StatBox statDescription={'Ignore Enemy Defense'} stat={''}/>
+            <StatBox statDescription={'Critical Rate'} stat={''}/>
+            <StatBox statDescription={'Critical Damage'} stat={''}/>
+            <StatBox statDescription={'Boss Damage'} stat={''}/>
+            <StatBox statDescription={'Buff Duration'} stat={''}/>
+          </Row>
+          <Row>
+            <StatBox statDescription={'Item Drop Rate'} stat={''}/>
+            <StatBox statDescription={'Mesos Obtained'} stat={''}/>
+            <StatBox statDescription={'Status Resistance'} stat={''}/>
+            <StatBox statDescription={'Defense'} stat={''}/>
+            <StatBox statDescription={'Speed'} stat={''}/>
+            <StatBox statDescription={'Jump'} stat={''}/>
+            <StatBox statDescription={'Knockback Resistance'} stat={''}/>
+            <StatBox statDescription={'Star Force'} stat={''}/>
+            <StatBox statDescription={'Arcane Power'} stat={''}/>
+          </Row>
+        </Container>
+      </div>
     </div>
   );
 }
