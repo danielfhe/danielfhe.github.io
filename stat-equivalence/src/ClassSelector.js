@@ -1,7 +1,6 @@
-export default function ClassSelector({ classes, selectedClass }) {
+export default function ClassSelector({ classes, setSelectedClass }) {
     function onDropdownSelected(e) {
-        console.log("Class dropdown selected value: ", e.target.value);
-        selectedClass = e.target.value;
+        setSelectedClass(e.target.value);
     }
 
     let options = classes.map(c => <option key={c} value={c}>{c}</option> );

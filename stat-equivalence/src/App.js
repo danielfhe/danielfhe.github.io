@@ -5,111 +5,68 @@ import ClassSelector from './ClassSelector.js';
 import Container from 'react-bootstrap/esm/Container';
 import Col from 'react-bootstrap/Col';
 import Row from 'react-bootstrap/Row';
+import { useState, useEffect } from 'react';
+import ClassUtils from './ClassUtils';
 
 function App() {
-  let classes = [
-    'Adele',
-    'Angelic Buster',
-    'Aran',
-    'Ark',
-    'Battle Mage',
-    'Bishop',
-    'Blaster',
-    'Blaze Wizard',
-    'Beast Tamer',
-    'Bowmaster',
-    'Buccaneer',
-    'Cadena',
-    'Cannoneer',
-    'Corsair',
-    'Dark Knight',
-    'Dawn Warrior',
-    'Demon Slayer',
-    'Dual Blade',
-    'Evan',
-    'Fire Poison',
-    'Hayato',
-    'Hero',
-    'Hoyoung',
-    'Ice Lightning',
-    'Illium',
-    'Jett',
-    'Kain',
-    'Kaiser',
-    'Kanna',
-    'Kinesis',
-    'Lara',
-    'Luminous',
-    'Marksmen',
-    'Mechanic',
-    'Mercedes',
-    'Mihile',
-    'Night Lord',
-    'Night Walker',
-    'Paladin',
-    'Pathfinder',
-    'Phantom',
-    'Shade',
-    'Shadower',
-    'Thunder Breaker',
-    'Wild Hunter',
-    'Wind Archer',
-    'Xenon',
-    'Zero'
-  ];
-  let selectedClass = '';
-  let stats = {
-    str: 123,
-    dex: 4,
-    luk: 4,
-    int: 4
-  };
+  const [selectedClass, setSelectedClass] = useState('');
+  const [stats, setStats] = useState({
+    level: 0,
+    hp: 0,
+    mp: 0,
+    str: 0,
+    dex: 0,
+    luk: 0,
+    int: 0,
+    dmgPercent: 0,
+    finalDmg: 0,
+    ied: 0,
+    critRate: 0,
+    critDmg: 0,
+    bossDmg: 0,
+    arcanePower: 0
+  });
+
+  useEffect(() => {
+    console.log(stats);
+  })
 
   return (
-    <div className="App">
+    <>
       <Container><HeadingBar/></Container>
       <div className="App-Body">
         <Container>
           <Row>
-            <Col><label>Class</label><ClassSelector classes={classes} selectedClass={selectedClass}/></Col>
-            <Col><StatBox statDescription={'Level'} stat={''}/></Col>
-            <Col><StatBox statDescription={'HP'} stat={''}/></Col>
-            <Col><StatBox statDescription={'MP'} stat={''}/></Col>
+            <Col><label>Class</label><ClassSelector classes={ClassUtils.getClassNames()} setSelectedClass={setSelectedClass}/></Col>
+            <Col><StatBox statName={'Level'} stat={stats.level} type={'number'} setStatValue={s => {setStats({...stats, level: Number(s)})}}/></Col>
+            <Col><StatBox statName={'HP'} stat={stats.hp} type={'number'} setStatValue={s => {setStats({...stats, hp: Number(s)})}}/></Col>
+            <Col><StatBox statName={'MP'} stat={stats.mp} type={'number'} setStatValue={s => {setStats({...stats, mp: Number(s)})}}/></Col>
           </Row>
         </Container>
         <Container>
           <Row>
-            <Col><StatBox statDescription={'STR'} stat={stats.str}/></Col>
-            <Col><StatBox statDescription={'DEX'} stat={stats.dex}/></Col>
-            <Col><StatBox statDescription={'LUK'} stat={stats.luk}/></Col>
-            <Col><StatBox statDescription={'INT'} stat={stats.int}/></Col>
+            <Col><StatBox statName={'STR'} stat={stats.str} type={'number'} setStatValue={s => {setStats({...stats, str: Number(s)})}}/></Col>
+            <Col><StatBox statName={'DEX'} stat={stats.dex} type={'number'} setStatValue={s => {setStats({...stats, dex: Number(s)})}}/></Col>
+            <Col><StatBox statName={'LUK'} stat={stats.luk} type={'number'} setStatValue={s => {setStats({...stats, luk: Number(s)})}}/></Col>
+            <Col><StatBox statName={'INT'} stat={stats.int} type={'number'} setStatValue={s => {setStats({...stats, int: Number(s)})}}/></Col>
           </Row>
         </Container>
         <br/>
         <Container>
           <Row>
-            <StatBox statDescription={'Damage %'} stat={''}/>
-            <StatBox statDescription={'Final Damage'} stat={''}/>
-            <StatBox statDescription={'Ignore Enemy Defense'} stat={''}/>
-            <StatBox statDescription={'Critical Rate'} stat={''}/>
-            <StatBox statDescription={'Critical Damage'} stat={''}/>
-            <StatBox statDescription={'Boss Damage'} stat={''}/>
-            <StatBox statDescription={'Buff Duration'} stat={''}/>
+            <Col><StatBox statName={'Damage %'} stat={stats.dmgPercent} type={'number'} setStatValue={s => {setStats({...stats, dmgPercent: Number(s)})}}/></Col>
+            <Col><StatBox statName={'Final Damage'} stat={stats.finalDmg} type={'number'} setStatValue={s => {setStats({...stats, finalDmg: Number(s)})}}/></Col>
+            <Col><StatBox statName={'Ignore Enemy Defense'} stat={stats.ied} type={'number'} setStatValue={s => {setStats({...stats, ied: Number(s)})}}/></Col>
+            <Col><StatBox statName={'Critical Rate'} stat={stats.critRate} type={'number'} setStatValue={s => {setStats({...stats, critRate: Number(s)})}}/></Col>
           </Row>
           <Row>
-            <StatBox statDescription={'Item Drop Rate'} stat={''}/>
-            <StatBox statDescription={'Mesos Obtained'} stat={''}/>
-            <StatBox statDescription={'Status Resistance'} stat={''}/>
-            <StatBox statDescription={'Defense'} stat={''}/>
-            <StatBox statDescription={'Speed'} stat={''}/>
-            <StatBox statDescription={'Jump'} stat={''}/>
-            <StatBox statDescription={'Knockback Resistance'} stat={''}/>
-            <StatBox statDescription={'Star Force'} stat={''}/>
-            <StatBox statDescription={'Arcane Power'} stat={''}/>
+            <Col><StatBox statName={'Critical Damage'} stat={stats.critDmg} type={'number'} setStatValue={s => {setStats({...stats, critDmg: Number(s)})}}/></Col>
+            <Col><StatBox statName={'Boss Damage'} stat={stats.bossDmg} type={'number'} setStatValue={s => {setStats({...stats, bossDmg: Number(s)})}}/></Col>
+            <Col><StatBox statName={'Main Stat from Arcane Symbols'} stat={stats.arcanePower} type={'number'} setStatValue={s => {setStats({...stats, arcanePower: Number(s)})}}/></Col>
           </Row>
         </Container>
       </div>
-    </div>
+    </>
   );
 }
 
