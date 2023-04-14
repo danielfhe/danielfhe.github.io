@@ -1,7 +1,7 @@
 import './App.css';
 import HeadingBar from './HeadingBar.js';
 import StatBox from './StatBox.js';
-import ClassSelector from './ClassSelector.js';
+import DropdownSelector from './DropdownSelector.js';
 import Container from 'react-bootstrap/esm/Container';
 import Col from 'react-bootstrap/Col';
 import Row from 'react-bootstrap/Row';
@@ -10,6 +10,7 @@ import ClassUtils from './ClassUtils';
 
 function App() {
   const [selectedClass, setSelectedClass] = useState('');
+  const [weapon, setWeapon] = useState('Ancient Bow');
   const [stats, setStats] = useState({
     level: 0,
     hp: 0,
@@ -29,6 +30,7 @@ function App() {
 
   useEffect(() => {
     console.log(stats);
+    console.log(weapon);
   })
 
   return (
@@ -37,7 +39,8 @@ function App() {
       <div className="App-Body">
         <Container>
           <Row>
-            <Col><label>Class</label><ClassSelector classes={ClassUtils.getClassNames()} setSelectedClass={setSelectedClass}/></Col>
+            <Col><label>Class</label><DropdownSelector optionsList={ClassUtils.getClassNames()} setSelected={setSelectedClass}/></Col>
+            <Col><label>Main weapon</label><DropdownSelector optionsList={ClassUtils.getWeaponNames()} setSelected={setWeapon}/></Col>
             <Col><StatBox statName={'Level'} stat={stats.level} type={'number'} setStatValue={s => {setStats({...stats, level: Number(s)})}}/></Col>
             <Col><StatBox statName={'HP'} stat={stats.hp} type={'number'} setStatValue={s => {setStats({...stats, hp: Number(s)})}}/></Col>
             <Col><StatBox statName={'MP'} stat={stats.mp} type={'number'} setStatValue={s => {setStats({...stats, mp: Number(s)})}}/></Col>
