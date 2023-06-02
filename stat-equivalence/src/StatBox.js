@@ -5,7 +5,7 @@ export default function StatBox({ statName, stat, type, setStatValue }) {
 
     return (
         <label>{statName}
-            <input className="Stat-Box" type={type} defaultValue={stat} onChange={onStatChange}/>
+            <input className="Stat-Box" type={type} min="0" defaultValue={stat} onChange={onStatChange}/>
         </label>
     );
 }

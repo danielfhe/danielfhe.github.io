@@ -1,4 +1,4 @@
-export default function ClassSelector({ optionsList, setSelected }) {
+export default function ClassSelector({ optionsList, selected, setSelected }) {
     function onDropdownSelected(e) {
         setSelected(e.target.value);
     }
@@ -6,7 +6,7 @@ export default function ClassSelector({ optionsList, setSelected }) {
     let options = optionsList.map(o => <option key={o} value={o}>{o}</option> );
 
     return(
-        <select id="Dropdown-Selector" onChange={onDropdownSelected}>
+        <select id="Dropdown-Selector" value={selected} onChange={onDropdownSelected}>
             {options}
         </select>
     );

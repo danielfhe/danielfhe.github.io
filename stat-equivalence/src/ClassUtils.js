@@ -7,18 +7,22 @@ export default class ClassUtils {
     return Object.keys(classes);
   }
 
+  static getClassInfo(className) {
+    return classes[className];
+  }
+
   static getWeaponNames() {
     return Object.keys(weapons);
   }
 
-  static getWeaponModifier(weapon, className) {
-    let modifier = weapons[weapon];
+  static getWeaponMultiplier(weapon, className) {
+    let multiplier = weapons[weapon];
 
-    if(className == 'Hero') {
-      if(['One-handed Axe', 'One-handed Sword', 'Two-handed Axe', 'Two-handed Sword'].includes(weapon)) return modifier + 0.1;
+    if(className === 'Hero') {
+      if(['One-handed Axe', 'One-handed Sword', 'Two-handed Axe', 'Two-handed Sword'].includes(weapon)) return multiplier + 0.1;
     }
 
-    return modifier;
+    return multiplier;
   }
 }
 
@@ -306,7 +310,7 @@ let classes = {
     dmgPercent: 35
   },
   'Xenon': {
-    primary: ['STR', 'DEX', 'LUK'],
+    primary: ['DEX', 'STR', 'LUK'],
     secondary: [],
     attPercent: 4,
     dmgPercent: 20
