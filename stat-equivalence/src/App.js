@@ -34,21 +34,21 @@ function App() {
     familiarPotentialAtt: 0,
     weapon: {
       highLevel: false,
-      potentialLine1: 'N/A',
-      potentialLine2: 'N/A',
-      potentialLine3: 'N/A'
+      primaryLine: 'N/A',
+      secondaryLine: 'N/A',
+      tertiaryLine: 'N/A'
     },
     secondary: {
       highLevel: false,
-      potentialLine1: 'N/A',
-      potentialLine2: 'N/A',
-      potentialLine3: 'N/A'
+      primaryLine: 'N/A',
+      secondaryLine: 'N/A',
+      tertiaryLine: 'N/A'
     },
     emblem: {
       highLevel: false,
-      potentialLine1: 'N/A',
-      potentialLine2: 'N/A',
-      potentialLine3: 'N/A'
+      primaryLine: 'N/A',
+      secondaryLine: 'N/A',
+      tertiaryLine: 'N/A'
     }
   });
 
@@ -65,8 +65,8 @@ function App() {
     const secondaryStatArray = classInfo.secondary
     .map(statName => stats[statName.toLowerCase()]);
     const attackPercent = 100.0 + (stats.magnificentSoul ? 3 : 0) + stats.familiarBadgeAtt + 
-      stats.familiarPotentialAtt + stats.bonusPotentialAtt + classInfo.attPercent;
-    // 100 + soul + badges + familiar potential + bonus potential att % (non-reboot) + class att % + attack from WSE
+      stats.familiarPotentialAtt + stats.bonusPotentialAtt + classInfo.attPercent + FormulaUtils.getWeaponSecondaryEmblemAttack(stats);
+    // 100 + soul + familiar badges + familiar potential + bonus potential att % (non-reboot) + class att % + attack from WSE
     const statValue = FormulaUtils.getStatValue(selectedClass, primaryStatArray.reduce((a, b) => a + b, 0), secondaryStatArray.reduce((a, b) => a + b, 0));
     const totalJobAttack = FormulaUtils.getTotalJobAttack(stats.upperShownDmgRange, weaponMultiplier, statValue, stats.dmgPercent, stats.finalDmg)
     const attack = totalJobAttack / (attackPercent / 100);
@@ -109,14 +109,29 @@ function App() {
             </Row>
             <Row><Col><h4><u>Equipment</u></h4></Col></Row>
             <Row>
-              <Col>Weapon</Col>
-              <Col>Secondary</Col>
-              <Col>Emblem</Col>
+              <Col><b>Weapon</b></Col>
+              <Col><b>Secondary</b></Col>
+              <Col><b>Emblem</b></Col>
             </Row>
             <Row>
-              <Col><input type="checkbox" checked={stats.weapon.highLevel} onChange={s => {setStats({...stats, weapon: {...stats.weapon, highLevel: !stats.weapon.highLevel}})}}/> Lvl 160+?</Col>
-              <Col><input type="checkbox" checked={stats.secondary.highLevel} onChange={s => {setStats({...stats, secondary: {...stats.secondary, highLevel: !stats.secondary.highLevel}})}}/> Lvl 160+?</Col>
-              <Col><input type="checkbox" checked={stats.emblem.highLevel} onChange={s => {setStats({...stats, emblem: {...stats.emblem, highLevel: !stats.emblem.highLevel}})}}/> Lvl 160+?</Col>
+              <Col><input type="checkbox" checked={stats.weapon.highLevel} onChange={s => {setStats({...stats, weapon: {highLevel: !stats.weapon.highLevel, primaryLine: 'N/A', secondaryLine: 'N/A', tertiaryLine: 'N/A'}})}}/> Lvl 150+</Col>
+              <Col><input type="checkbox" checked={stats.secondary.highLevel} onChange={s => {setStats({...stats, secondary: {highLevel: !stats.secondary.highLevel, primaryLine: 'N/A', secondaryLine: 'N/A', tertiaryLine: 'N/A'}})}}/> Lvl 150+</Col>
+              <Col><input type="checkbox" checked={stats.emblem.highLevel} onChange={s => {setStats({...stats, emblem: {highLevel: !stats.emblem.highLevel, primaryLine: 'N/A', secondaryLine: 'N/A', tertiaryLine: 'N/A'}})}}/> Lvl 150+</Col>
+            </Row>
+            <Row>
+              <Col>Primary line <DropdownSelector optionsList={FormulaUtils.getPrimaryPotentialOptions(stats.weapon.highLevel)} selected={stats.weapon.primaryLine} setSelected={s => {setStats({...stats, weapon: {...stats.weapon, primaryLine: s}})}}/></Col>
+              <Col>Primary line <DropdownSelector optionsList={FormulaUtils.getPrimaryPotentialOptions(stats.secondary.highLevel)} selected={stats.secondary.primaryLine} setSelected={s => {setStats({...stats, secondary: {...stats.secondary, primaryLine: s}})}}/></Col>
+              <Col>Primary line <DropdownSelector optionsList={FormulaUtils.getPrimaryPotentialOptions(stats.emblem.highLevel)} selected={stats.emblem.primaryLine} setSelected={s => {setStats({...stats, emblem: {...stats.emblem, primaryLine: s}})}}/></Col>
+            </Row>
+            <Row>
+              <Col>Secondary line <DropdownSelector optionsList={FormulaUtils.getSecondaryPotentialOptions(stats.weapon.highLevel)} selected={stats.weapon.secondaryLine} setSelected={s => {setStats({...stats, weapon: {...stats.weapon, secondaryLine: s}})}}/></Col>
+              <Col>Secondary line <DropdownSelector optionsList={FormulaUtils.getSecondaryPotentialOptions(stats.secondary.highLevel)} selected={stats.secondary.secondaryLine} setSelected={s => {setStats({...stats, secondary: {...stats.secondary, secondaryLine: s}})}}/></Col>
+              <Col>Secondary line <DropdownSelector optionsList={FormulaUtils.getSecondaryPotentialOptions(stats.emblem.highLevel)} selected={stats.emblem.secondaryLine} setSelected={s => {setStats({...stats, emblem: {...stats.emblem, secondaryLine: s}})}}/></Col>
+            </Row>
+            <Row>
+              <Col>Tertiary line <DropdownSelector optionsList={FormulaUtils.getSecondaryPotentialOptions(stats.weapon.highLevel)} selected={stats.weapon.tertiaryLine} setSelected={s => {setStats({...stats, weapon: {...stats.weapon, tertiaryLine: s}})}}/></Col>
+              <Col>Tertiary line <DropdownSelector optionsList={FormulaUtils.getSecondaryPotentialOptions(stats.secondary.highLevel)} selected={stats.secondary.tertiaryLine} setSelected={s => {setStats({...stats, secondary: {...stats.secondary, tertiaryLine: s}})}}/></Col>
+              <Col>Tertiary line <DropdownSelector optionsList={FormulaUtils.getSecondaryPotentialOptions(stats.emblem.highLevel)} selected={stats.emblem.tertiaryLine} setSelected={s => {setStats({...stats, emblem: {...stats.emblem, tertiaryLine: s}})}}/></Col>
             </Row>
             <Row><Col><h4><u>Bonus Potentials</u></h4></Col></Row>
             <Row>
