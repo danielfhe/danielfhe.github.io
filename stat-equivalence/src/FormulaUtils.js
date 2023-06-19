@@ -9,7 +9,7 @@ export default class FormulaUtils {
   }
 
   static getTotalJobAttack(upperShownDmgRange, weaponMultiplier, statValue, dmgPercent, finalDmgPercent) {
-    return (100.0 * upperShownDmgRange) / ((weaponMultiplier * statValue) * (1 + (dmgPercent / 100)) * (1 + (finalDmgPercent / 100)));
+    return (100.0 * upperShownDmgRange) / ((weaponMultiplier * statValue) * (1 + (dmgPercent / 100.0)) * (1 + (finalDmgPercent / 100.0)));
   }
 
   static getPrimaryPotentialOptions(isHighLevel) {
@@ -24,17 +24,25 @@ export default class FormulaUtils {
     let weaponAttackPotential = this.parseWSEAttack(stats.weapon);
     let secondaryAttackPotential = this.parseWSEAttack(stats.secondary);
     let emblemAttackPotential = this.parseWSEAttack(stats.emblem);
-
+    
     return weaponAttackPotential + secondaryAttackPotential + emblemAttackPotential;
   }
 
   static parseWSEAttack(equip) {
-    let re = /(\d)/;
+    let re = /\d+/;
     let primary = equip.primaryLine.includes('ATT') ? Number(re.exec(equip.primaryLine)) : 0;
     let secondary = equip.secondaryLine.includes('ATT') ? Number(re.exec(equip.secondaryLine)) : 0;
     let tertiary = equip.tertiaryLine.includes('ATT') ? Number(re.exec(equip.tertiaryLine)) : 0;
 
     return primary + secondary + tertiary;
+  }
+
+  static damage(classInfo, attackWithoutPercent, attackPercentAsMultiplier, finalStatPrimary, primaryWithoutPercent, primaryPercentAsMultiplier, finalStatSecondary, secondaryWithoutPercent, secondaryPercentAsMultiplier) { //TODO: refactor
+    let primary = (primaryWithoutPercent - finalStatPrimary) * primaryPercentAsMultiplier + finalStatPrimary;
+    let secondary = (secondaryWithoutPercent - finalStatSecondary) * secondaryPercentAsMultiplier + finalStatSecondary;
+    let attack = attackWithoutPercent * attackPercentAsMultiplier;
+
+    return ((4 * primary) + secondary) * attack;
   }
 }
 

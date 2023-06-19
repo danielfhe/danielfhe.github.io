@@ -16,7 +16,7 @@ export default class ClassUtils {
   }
 
   static getWeaponMultiplier(weapon, className) {
-    let multiplier = weapons[weapon];
+    let multiplier = weapons[weapon].multiplier;
 
     if(className === 'Hero') {
       if(['One-handed Axe', 'One-handed Sword', 'Two-handed Axe', 'Two-handed Sword'].includes(weapon)) return multiplier + 0.1;

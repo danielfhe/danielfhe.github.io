@@ -17,21 +17,21 @@ function App() {
     hp: 0,
     mp: 0,
     upperShownDmgRange: 0,
-    str: 0,
-    dex: 0,
-    luk: 0,
-    int: 0,
-    percentStr: 0,
-    percentDex: 0,
-    percentLuk: 0,
-    percentInt: 0,
+    STR: 0,
+    DEX: 0,
+    LUK: 0,
+    INT: 0,
+    percentSTR: 0,
+    percentDEX: 0,
+    percentLUK: 0,
+    percentINT: 0,
     dmgPercent: 0,
     finalDmg: 0,
     ied: 0,
     critRate: 0,
     critDmg: 0,
     bossDmg: 0,
-    arcanePower: 0,
+    symbolStats: 0,
     bonusPotentialAtt: 0,
     magnificentSoul: false,
     familiarBadgeAtt: 0,
@@ -55,10 +55,10 @@ function App() {
       tertiaryLine: 'N/A'
     },
     hyper: {
-      str: 0,
-      dex: 0,
-      int: 0,
-      luk: 0,
+      STR: 0,
+      DEX: 0,
+      LUK: 0,
+      INT: 0,
       hp: 0,
       mp: 0,
       dftfmana: 0,
@@ -72,34 +72,68 @@ function App() {
       jobAtt: 0,
       bonuxExp: 0,
       arcaneForce: 0
+    },
+    legion: {
+      primary: 0,
+      secondary: 0
     }
   });
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    console.log(`form data: ${JSON.stringify(stats)}`);
+    console.log('form data');
+    console.log(stats);
     console.log(`class: ${selectedClass}`);
     console.log(`weapon: ${weapon}`);
-
+    
     const classInfo = ClassUtils.getClassInfo(selectedClass);
     const weaponMultiplier = ClassUtils.getWeaponMultiplier(weapon, selectedClass);
-    const primaryStatArray = classInfo.primary
-      .map(statName => stats[statName.toLowerCase()]);
-    const secondaryStatArray = classInfo.secondary
-    .map(statName => stats[statName.toLowerCase()]);
-    const attackPercent = 100.0 + (stats.magnificentSoul ? 3 : 0) + stats.familiarBadgeAtt + 
+    let calculated = {};
+    calculated.primaryStats = classInfo.primary
+      .map(statName => stats[statName]);
+    calculated.secondaryStats = classInfo.secondary
+      .map(statName => stats[statName]);
+    calculated.primaryStatSum = calculated.primaryStats.reduce((a, b) => a + b, 0);
+    calculated.secondaryStatSum = calculated.secondaryStats.reduce((a, b) => a + b, 0);
+    calculated.primaryStatPercents = classInfo.primary.map(statName => stats[`percent${statName}`]);
+    calculated.secondaryStatPercents = classInfo.secondary.map(statName => stats[`percent${statName}`]);
+    calculated.hyperPrimaryStats = classInfo.primary
+      .map(statName => stats.hyper[statName]);
+    calculated.hyperSecondaryStats = classInfo.primary
+      .map(statName => stats.hyper[statName]);
+
+    calculated.attackPercent = 100.0 + (stats.magnificentSoul ? 3 : 0) + stats.familiarBadgeAtt + 
       stats.familiarPotentialAtt + stats.bonusPotentialAtt + classInfo.attPercent + FormulaUtils.getWeaponSecondaryEmblemAttack(stats);
     // 100 + soul + familiar badges + familiar potential + bonus potential att % (non-reboot) + class att % + attack from WSE
-    const statValue = FormulaUtils.getStatValue(selectedClass, primaryStatArray.reduce((a, b) => a + b, 0), secondaryStatArray.reduce((a, b) => a + b, 0));
-    const totalJobAttack = FormulaUtils.getTotalJobAttack(stats.upperShownDmgRange, weaponMultiplier, statValue, stats.dmgPercent, stats.finalDmg)
-    const attack = totalJobAttack / (attackPercent / 100);
-    const dmgPercent = stats.dmgPercent + classInfo.dmgPercent; // damage percent + class damage percent
+    calculated.statValue = FormulaUtils.getStatValue(selectedClass, calculated.primaryStatSum, calculated.secondaryStatSum);
+    calculated.totalJobAttack = FormulaUtils.getTotalJobAttack(stats.upperShownDmgRange, weaponMultiplier, calculated.statValue, stats.dmgPercent, stats.finalDmg)
+    calculated.attack = Math.floor(calculated.totalJobAttack / (calculated.attackPercent / 100));
+    calculated.dmgPercent = stats.dmgPercent + classInfo.dmgPercent; // damage percent + class damage percent
 
-    const secondaryPercentsAsMultiplier = classInfo.secondary.map(sec => (100.0 + stats[sec.toLowerCase()]) / 100 );
-    const primaryPercents = classInfo.primary.map(pri => stats[pri.toLowerCase()] );
-    const finalStats = 
+    calculated.finalStatPrimary = (30 * calculated.hyperPrimaryStats[0]) + stats.symbolStats + stats.legion.primary;
+    calculated.finalStatSecondary = (30 * calculated.hyperSecondaryStats[0]) + stats.legion.secondary;
+    calculated.primaryBaseTotalStat = (calculated.primaryStats[0] - calculated.finalStatPrimary) / (1.0 + (calculated.primaryStatPercents[0] / 100));
+    calculated.secondaryBaseTotalStat = (calculated.secondaryStats[0] - calculated.finalStatSecondary) / (1.0 + (calculated.secondaryStatPercents[0] / 100));
 
-    console.log(primaryStatArray);
+    //(4 * ((primary_without_perc - flat_primary) * primary_perc + flat_primary) + ((secondary_without_perc - flat_secondary) * secondary_perc + flat_secondary)) * (attack_without_perc * attack_perc)
+    calculated.currentDmg = FormulaUtils.damage(classInfo, calculated.attack, calculated.attackPercent / 100.0, calculated.finalStatPrimary, calculated.primaryBaseTotalStat + calculated.finalStatPrimary, calculated.primaryStatPercents[0] / 100.0, calculated.finalStatSecondary, calculated.secondaryBaseTotalStat + calculated.finalStatSecondary, calculated.secondaryStatPercents[0] / 100.0);
+    calculated.plus1Attack = FormulaUtils.damage(classInfo, calculated.attack + 1, calculated.attackPercent / 100.0, calculated.finalStatPrimary, calculated.primaryBaseTotalStat + calculated.finalStatPrimary, calculated.primaryStatPercents[0] / 100.0, calculated.finalStatSecondary, calculated.secondaryBaseTotalStat + calculated.finalStatSecondary, calculated.secondaryStatPercents[0] / 100.0);
+    calculated.attackDifference = calculated.plus1Attack - calculated.currentDmg;
+
+    calculated.plus1PrimaryStat = FormulaUtils.damage(classInfo, calculated.attack, calculated.attackPercent / 100.0, calculated.finalStatPrimary, calculated.primaryBaseTotalStat + calculated.finalStatPrimary + 1, calculated.primaryStatPercents[0] / 100.0, calculated.finalStatSecondary, calculated.secondaryBaseTotalStat + calculated.finalStatSecondary, calculated.secondaryStatPercents[0] / 100.0);
+    calculated.primaryStatDifference = calculated.plus1PrimaryStat - calculated.currentDmg;
+
+    calculated.plus1SecondaryStat = FormulaUtils.damage(classInfo, calculated.attack, calculated.attackPercent / 100.0, calculated.finalStatPrimary, calculated.primaryBaseTotalStat + calculated.finalStatPrimary, calculated.primaryStatPercents[0] / 100.0, calculated.finalStatSecondary, calculated.secondaryBaseTotalStat + calculated.finalStatSecondary + 1, calculated.secondaryStatPercents[0] / 100.0);
+    calculated.secondaryStatDifference = calculated.plus1SecondaryStat - calculated.currentDmg;
+
+    calculated.plus1PercentAll = FormulaUtils.damage(classInfo, calculated.attack, calculated.attackPercent / 100.0, calculated.finalStatPrimary, calculated.primaryBaseTotalStat + calculated.finalStatPrimary, calculated.primaryStatPercents[0] / 100.0 + 0.01, calculated.finalStatSecondary, calculated.secondaryBaseTotalStat + calculated.finalStatSecondary, calculated.secondaryStatPercents[0] / 100.0 + 0.01);
+    calculated.percentAllDifference = calculated.plus1PercentAll - calculated.currentDmg;
+
+    calculated.attackEquivalence = calculated.attackDifference / calculated.primaryStatDifference;
+    calculated.secondaryEquivalence = calculated.secondaryStatDifference / calculated.primaryStatDifference;
+    calculated.percentAllEquivalence = calculated.percentAllDifference / calculated.primaryStatDifference;
+
+    console.log(calculated);
   }
 
   return (
@@ -118,16 +152,16 @@ function App() {
               <Col><StatBox statName={'Upper Damage Range'} stat={stats.upperShownDmgRange} type={'number'} setStatValue={s => {setStats({...stats, upperShownDmgRange: Number(s)})}}/></Col>
             </Row>
             <Row>
-              <Col><StatBox statName={'STR'} stat={stats.str} type={'number'} setStatValue={s => {setStats({...stats, str: Number(s)})}}/></Col>
-              <Col><StatBox statName={'DEX'} stat={stats.dex} type={'number'} setStatValue={s => {setStats({...stats, dex: Number(s)})}}/></Col>
-              <Col><StatBox statName={'LUK'} stat={stats.luk} type={'number'} setStatValue={s => {setStats({...stats, luk: Number(s)})}}/></Col>
-              <Col><StatBox statName={'INT'} stat={stats.int} type={'number'} setStatValue={s => {setStats({...stats, int: Number(s)})}}/></Col>
+              <Col><StatBox statName={'STR'} stat={stats.STR} type={'number'} setStatValue={s => {setStats({...stats, STR: Number(s)})}}/></Col>
+              <Col><StatBox statName={'DEX'} stat={stats.DEX} type={'number'} setStatValue={s => {setStats({...stats, DEX: Number(s)})}}/></Col>
+              <Col><StatBox statName={'LUK'} stat={stats.LUK} type={'number'} setStatValue={s => {setStats({...stats, LUK: Number(s)})}}/></Col>
+              <Col><StatBox statName={'INT'} stat={stats.INT} type={'number'} setStatValue={s => {setStats({...stats, INT: Number(s)})}}/></Col>
             </Row>
             <Row>
-              <Col><StatBox statName={'STR% on equips'} stat={stats.percentStr} type={'number'} setStatValue={s => {setStats({...stats, percentStr: Number(s)})}}/></Col>
-              <Col><StatBox statName={'DEX% on equips'} stat={stats.percentDex} type={'number'} setStatValue={s => {setStats({...stats, percentDex: Number(s)})}}/></Col>
-              <Col><StatBox statName={'LUK% on equips'} stat={stats.percentLuk} type={'number'} setStatValue={s => {setStats({...stats, percentLuk: Number(s)})}}/></Col>
-              <Col><StatBox statName={'INT% on equips'} stat={stats.percentInt} type={'number'} setStatValue={s => {setStats({...stats, percentInt: Number(s)})}}/></Col>
+              <Col><StatBox statName={'STR% on equips'} stat={stats.percentSTR} type={'number'} setStatValue={s => {setStats({...stats, percentSTR: Number(s)})}}/></Col>
+              <Col><StatBox statName={'DEX% on equips'} stat={stats.percentDEX} type={'number'} setStatValue={s => {setStats({...stats, percentDEX: Number(s)})}}/></Col>
+              <Col><StatBox statName={'LUK% on equips'} stat={stats.percentLUK} type={'number'} setStatValue={s => {setStats({...stats, percentLUK: Number(s)})}}/></Col>
+              <Col><StatBox statName={'INT% on equips'} stat={stats.percentINT} type={'number'} setStatValue={s => {setStats({...stats, percentINT: Number(s)})}}/></Col>
             </Row>
             <Row>
               <Col><StatBox statName={'Damage %'} stat={stats.dmgPercent} type={'number'} setStatValue={s => {setStats({...stats, dmgPercent: Number(s)})}}/></Col>
@@ -138,7 +172,11 @@ function App() {
             <Row>
               <Col><StatBox statName={'Critical Damage'} stat={stats.critDmg} type={'number'} setStatValue={s => {setStats({...stats, critDmg: Number(s)})}}/></Col>
               <Col><StatBox statName={'Boss Damage'} stat={stats.bossDmg} type={'number'} setStatValue={s => {setStats({...stats, bossDmg: Number(s)})}}/></Col>
-              <Col><StatBox statName={'Main Stat from Arcane Symbols'} stat={stats.arcanePower} type={'number'} setStatValue={s => {setStats({...stats, arcanePower: Number(s)})}}/></Col>
+            </Row>
+            <Row>
+              <Col><StatBox statName={'Main Stat(s) from Arcane/Sacred Symbols'} stat={stats.symbolStats} type={'number'} setStatValue={s => {setStats({...stats, symbolStats: Number(s)})}}/></Col>
+              <Col><StatBox statName={'Main Stat(s) from Legion member bonuses'} stat={stats.legion.primary} type={'number'} setStatValue={s => {setStats({...stats, legion: {...stats.legion, primary: Number(s)}})}}/></Col>
+              <Col><StatBox statName={'Secondary Stat(s) from Legion member bonuses'} stat={stats.legion.secondary} type={'number'} setStatValue={s => {setStats({...stats, legion: {...stats.legion, secondary: Number(s)}})}}/></Col>
             </Row>
             <Row><Col><h4><u>Equipment</u></h4></Col></Row>
             <Row>
@@ -147,9 +185,9 @@ function App() {
               <Col><b>Emblem</b></Col>
             </Row>
             <Row>
-              <Col><input type="checkbox" checked={stats.weapon.highLevel} onChange={s => {setStats({...stats, weapon: {highLevel: !stats.weapon.highLevel, primaryLine: 'N/A', secondaryLine: 'N/A', tertiaryLine: 'N/A'}})}}/> Lvl 150+</Col>
-              <Col><input type="checkbox" checked={stats.secondary.highLevel} onChange={s => {setStats({...stats, secondary: {highLevel: !stats.secondary.highLevel, primaryLine: 'N/A', secondaryLine: 'N/A', tertiaryLine: 'N/A'}})}}/> Lvl 150+</Col>
-              <Col><input type="checkbox" checked={stats.emblem.highLevel} onChange={s => {setStats({...stats, emblem: {highLevel: !stats.emblem.highLevel, primaryLine: 'N/A', secondaryLine: 'N/A', tertiaryLine: 'N/A'}})}}/> Lvl 150+</Col>
+              <Col><input id="weaponLevel" type="checkbox" checked={stats.weapon.highLevel} onChange={s => {setStats({...stats, weapon: {highLevel: !stats.weapon.highLevel, primaryLine: 'N/A', secondaryLine: 'N/A', tertiaryLine: 'N/A'}})}}/> <label for="weaponLevel">Lvl 150+</label></Col>
+              <Col><input id="secondaryLevel" type="checkbox" checked={stats.secondary.highLevel} onChange={s => {setStats({...stats, secondary: {highLevel: !stats.secondary.highLevel, primaryLine: 'N/A', secondaryLine: 'N/A', tertiaryLine: 'N/A'}})}}/> <label for="secondaryLevel">Lvl 150+</label></Col>
+              <Col><input id="emblemLevel" type="checkbox" checked={stats.emblem.highLevel} onChange={s => {setStats({...stats, emblem: {highLevel: !stats.emblem.highLevel, primaryLine: 'N/A', secondaryLine: 'N/A', tertiaryLine: 'N/A'}})}}/> <label for="emblemLevel">Lvl 150+</label></Col>
             </Row>
             <Row>
               <Col>Primary line <DropdownSelector optionsList={FormulaUtils.getPrimaryPotentialOptions(stats.weapon.highLevel)} selected={stats.weapon.primaryLine} setSelected={s => {setStats({...stats, weapon: {...stats.weapon, primaryLine: s}})}}/></Col>
@@ -173,19 +211,19 @@ function App() {
             <Row><Col><h4><u>Hyper Stats</u></h4></Col></Row>
             <Row>
               <Col md={{span: 2, offset: 0}}>STR</Col>
-              <Col md={1}><DropdownSelector optionsList={Array.from({length: 16}, (v, i) => i)} selected={stats.hyper.str} setSelected={s => {setStats({...stats, hyper: {...stats.hyper, str: s}})}}/></Col>
+              <Col md={1}><DropdownSelector optionsList={Array.from({length: 16}, (v, i) => i)} selected={stats.hyper.STR} setSelected={s => {setStats({...stats, hyper: {...stats.hyper, STR: s}})}}/></Col>
             </Row>
             <Row>
               <Col md={{span: 2, offset: 0}}>DEX</Col>
-              <Col md={1}><DropdownSelector optionsList={Array.from({length: 16}, (v, i) => i)} selected={stats.hyper.dex} setSelected={s => {setStats({...stats, hyper: {...stats.hyper, dex: s}})}}/></Col>
+              <Col md={1}><DropdownSelector optionsList={Array.from({length: 16}, (v, i) => i)} selected={stats.hyper.DEX} setSelected={s => {setStats({...stats, hyper: {...stats.hyper, DEX: s}})}}/></Col>
             </Row>
             <Row>
               <Col md={{span: 2, offset: 0}}>LUK</Col>
-              <Col md={1}><DropdownSelector optionsList={Array.from({length: 16}, (v, i) => i)} selected={stats.hyper.luk} setSelected={s => {setStats({...stats, hyper: {...stats.hyper, luk: s}})}}/></Col>
+              <Col md={1}><DropdownSelector optionsList={Array.from({length: 16}, (v, i) => i)} selected={stats.hyper.LUK} setSelected={s => {setStats({...stats, hyper: {...stats.hyper, LUK: s}})}}/></Col>
             </Row>
             <Row>
               <Col md={{span: 2, offset: 0}}>INT</Col>
-              <Col md={1}><DropdownSelector optionsList={Array.from({length: 16}, (v, i) => i)} selected={stats.hyper.int} setSelected={s => {setStats({...stats, hyper: {...stats.hyper, int: s}})}}/></Col>
+              <Col md={1}><DropdownSelector optionsList={Array.from({length: 16}, (v, i) => i)} selected={stats.hyper.INT} setSelected={s => {setStats({...stats, hyper: {...stats.hyper, INT: s}})}}/></Col>
             </Row>
             <Row>
               <Col md={{span: 2, offset: 0}}>HP</Col>
@@ -233,7 +271,7 @@ function App() {
             </Row>
             <Row><Col><h4><u>Souls</u></h4></Col></Row>
             <Row>
-              <Col><input type="checkbox" checked={stats.magnificentSoul} onChange={s => {setStats({...stats, magnificentSoul: !stats.magnificentSoul})}}/> Magnificent (ATT +3%)</Col>
+              <Col><input id="magnificentSoul" type="checkbox" checked={stats.magnificentSoul} onChange={s => {setStats({...stats, magnificentSoul: !stats.magnificentSoul})}}/> <label for="magnificentSoul">Magnificent (ATT +3%)</label></Col>
             </Row>
             <Row><Col><h4><u>Familiars</u></h4></Col></Row>
             <Row><Col><h5>Badge Effect</h5></Col><Col><h5>Potential</h5></Col></Row>
