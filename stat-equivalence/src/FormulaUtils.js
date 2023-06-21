@@ -37,9 +37,9 @@ export default class FormulaUtils {
     return primary + secondary + tertiary;
   }
 
-  static damage(classInfo, attackWithoutPercent, attackPercentAsMultiplier, finalStatPrimary, primaryWithoutPercent, primaryPercentAsMultiplier, finalStatSecondary, secondaryWithoutPercent, secondaryPercentAsMultiplier) { //TODO: refactor
-    let primary = (primaryWithoutPercent - finalStatPrimary) * primaryPercentAsMultiplier + finalStatPrimary;
-    let secondary = (secondaryWithoutPercent - finalStatSecondary) * secondaryPercentAsMultiplier + finalStatSecondary;
+  static damage(classInfo, attackWithoutPercent, attackPercentAsMultiplier, finalStatPrimary, baseTotalStatPrimary, primaryPercentAsMultiplier, finalStatSecondary, baseTotalStatSecondary, secondaryPercentAsMultiplier) { //TODO: refactor
+    let primary = baseTotalStatPrimary * primaryPercentAsMultiplier + finalStatPrimary;
+    let secondary = baseTotalStatSecondary * secondaryPercentAsMultiplier + finalStatSecondary;
     let attack = attackWithoutPercent * attackPercentAsMultiplier;
 
     return ((4 * primary) + secondary) * attack;

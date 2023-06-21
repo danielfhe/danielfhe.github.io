@@ -25,6 +25,7 @@ function App() {
     percentDEX: 0,
     percentLUK: 0,
     percentINT: 0,
+    percentAllStat: 0,
     dmgPercent: 0,
     finalDmg: 0,
     ied: 0,
@@ -112,25 +113,24 @@ function App() {
 
     calculated.finalStatPrimary = (30 * calculated.hyperPrimaryStats[0]) + stats.symbolStats + stats.legion.primary;
     calculated.finalStatSecondary = (30 * calculated.hyperSecondaryStats[0]) + stats.legion.secondary;
-    calculated.primaryBaseTotalStat = (calculated.primaryStats[0] - calculated.finalStatPrimary) / (1.0 + (calculated.primaryStatPercents[0] / 100));
-    calculated.secondaryBaseTotalStat = (calculated.secondaryStats[0] - calculated.finalStatSecondary) / (1.0 + (calculated.secondaryStatPercents[0] / 100));
+    calculated.primaryBaseTotalStat = (calculated.primaryStats[0] - calculated.finalStatPrimary) / (1.0 + (calculated.primaryStatPercents[0] / 100.0));
+    calculated.secondaryBaseTotalStat = (calculated.secondaryStats[0] - calculated.finalStatSecondary) / (1.0 + (calculated.secondaryStatPercents[0] / 100.0));
 
-    //(4 * ((primary_without_perc - flat_primary) * primary_perc + flat_primary) + ((secondary_without_perc - flat_secondary) * secondary_perc + flat_secondary)) * (attack_without_perc * attack_perc)
-    calculated.currentDmg = FormulaUtils.damage(classInfo, calculated.attack, calculated.attackPercent / 100.0, calculated.finalStatPrimary, calculated.primaryBaseTotalStat + calculated.finalStatPrimary, calculated.primaryStatPercents[0] / 100.0, calculated.finalStatSecondary, calculated.secondaryBaseTotalStat + calculated.finalStatSecondary, calculated.secondaryStatPercents[0] / 100.0);
-    calculated.plus1Attack = FormulaUtils.damage(classInfo, calculated.attack + 1, calculated.attackPercent / 100.0, calculated.finalStatPrimary, calculated.primaryBaseTotalStat + calculated.finalStatPrimary, calculated.primaryStatPercents[0] / 100.0, calculated.finalStatSecondary, calculated.secondaryBaseTotalStat + calculated.finalStatSecondary, calculated.secondaryStatPercents[0] / 100.0);
+    calculated.currentDmg = FormulaUtils.damage(classInfo, calculated.attack, calculated.attackPercent / 100.0, calculated.finalStatPrimary, calculated.primaryBaseTotalStat, 1 + calculated.primaryStatPercents[0] / 100.0, calculated.finalStatSecondary, calculated.secondaryBaseTotalStat, 1 + calculated.secondaryStatPercents[0] / 100.0);
+    calculated.plus1Attack = FormulaUtils.damage(classInfo, calculated.attack + 1, calculated.attackPercent / 100.0, calculated.finalStatPrimary, calculated.primaryBaseTotalStat, 1 + calculated.primaryStatPercents[0] / 100.0, calculated.finalStatSecondary, calculated.secondaryBaseTotalStat, 1 + calculated.secondaryStatPercents[0] / 100.0);
     calculated.attackDifference = calculated.plus1Attack - calculated.currentDmg;
 
-    calculated.plus1PrimaryStat = FormulaUtils.damage(classInfo, calculated.attack, calculated.attackPercent / 100.0, calculated.finalStatPrimary, calculated.primaryBaseTotalStat + calculated.finalStatPrimary + 1, calculated.primaryStatPercents[0] / 100.0, calculated.finalStatSecondary, calculated.secondaryBaseTotalStat + calculated.finalStatSecondary, calculated.secondaryStatPercents[0] / 100.0);
+    calculated.plus1PrimaryStat = FormulaUtils.damage(classInfo, calculated.attack, calculated.attackPercent / 100.0, calculated.finalStatPrimary, calculated.primaryBaseTotalStat + 1, 1 + calculated.primaryStatPercents[0] / 100.0, calculated.finalStatSecondary, calculated.secondaryBaseTotalStat, 1 + calculated.secondaryStatPercents[0] / 100.0);
     calculated.primaryStatDifference = calculated.plus1PrimaryStat - calculated.currentDmg;
 
-    calculated.plus1SecondaryStat = FormulaUtils.damage(classInfo, calculated.attack, calculated.attackPercent / 100.0, calculated.finalStatPrimary, calculated.primaryBaseTotalStat + calculated.finalStatPrimary, calculated.primaryStatPercents[0] / 100.0, calculated.finalStatSecondary, calculated.secondaryBaseTotalStat + calculated.finalStatSecondary + 1, calculated.secondaryStatPercents[0] / 100.0);
+    calculated.plus1SecondaryStat = FormulaUtils.damage(classInfo, calculated.attack, calculated.attackPercent / 100.0, calculated.finalStatPrimary, calculated.primaryBaseTotalStat, 1 + calculated.primaryStatPercents[0] / 100.0, calculated.finalStatSecondary, calculated.secondaryBaseTotalStat + 1, 1 + calculated.secondaryStatPercents[0] / 100.0);
     calculated.secondaryStatDifference = calculated.plus1SecondaryStat - calculated.currentDmg;
 
-    calculated.plus1PercentAll = FormulaUtils.damage(classInfo, calculated.attack, calculated.attackPercent / 100.0, calculated.finalStatPrimary, calculated.primaryBaseTotalStat + calculated.finalStatPrimary, calculated.primaryStatPercents[0] / 100.0 + 0.01, calculated.finalStatSecondary, calculated.secondaryBaseTotalStat + calculated.finalStatSecondary, calculated.secondaryStatPercents[0] / 100.0 + 0.01);
+    calculated.plus1PercentAll = FormulaUtils.damage(classInfo, calculated.attack, calculated.attackPercent / 100.0, calculated.finalStatPrimary, calculated.primaryBaseTotalStat, (1 + calculated.primaryStatPercents[0] / 100.0) + 0.01, calculated.finalStatSecondary, calculated.secondaryBaseTotalStat, (1 + calculated.secondaryStatPercents[0] / 100.0) + 0.01);
     calculated.percentAllDifference = calculated.plus1PercentAll - calculated.currentDmg;
 
     calculated.attackEquivalence = calculated.attackDifference / calculated.primaryStatDifference;
-    calculated.secondaryEquivalence = calculated.secondaryStatDifference / calculated.primaryStatDifference;
+    calculated.secondaryEquivalence = calculated.primaryStatDifference / calculated.secondaryStatDifference;
     calculated.percentAllEquivalence = calculated.percentAllDifference / calculated.primaryStatDifference;
 
     console.log(calculated);
@@ -162,6 +162,7 @@ function App() {
               <Col><StatBox statName={'DEX% on equips'} stat={stats.percentDEX} type={'number'} setStatValue={s => {setStats({...stats, percentDEX: Number(s)})}}/></Col>
               <Col><StatBox statName={'LUK% on equips'} stat={stats.percentLUK} type={'number'} setStatValue={s => {setStats({...stats, percentLUK: Number(s)})}}/></Col>
               <Col><StatBox statName={'INT% on equips'} stat={stats.percentINT} type={'number'} setStatValue={s => {setStats({...stats, percentINT: Number(s)})}}/></Col>
+              <Col><StatBox statName={'All stat% on equips'} stat={stats.percentAllStat} type={'number'} setStatValue={s => {setStats({...stats, percentAllStat: Number(s)})}}/></Col>
             </Row>
             <Row>
               <Col><StatBox statName={'Damage %'} stat={stats.dmgPercent} type={'number'} setStatValue={s => {setStats({...stats, dmgPercent: Number(s)})}}/></Col>
