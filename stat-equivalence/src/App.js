@@ -1,6 +1,6 @@
 import './App.css';
 import HeadingBar from './HeadingBar.js';
-import StatBox from './StatBox.js';
+import StatBox, { HideableStatColumn } from './StatBox.js';
 import DropdownSelector from './DropdownSelector.js';
 import Container from 'react-bootstrap/esm/Container';
 import Col from 'react-bootstrap/Col';
@@ -79,17 +79,19 @@ function App() {
       secondary: 0
     }
   });
-
+  const [statEquivalence, setStatEquivalence] = useState({
+    attackEquivalence: null,
+    secondaryEquivalence: null,
+    percentAllEquivalence: null
+  })
+  const classInfo = ClassUtils.getClassInfo(selectedClass);
+  
   const handleSubmit = (event) => {
     event.preventDefault();
-    console.log('form data');
-    console.log(stats);
-    console.log(`class: ${selectedClass}`);
-    console.log(`weapon: ${weapon}`);
     
-    const classInfo = ClassUtils.getClassInfo(selectedClass);
     const weaponMultiplier = ClassUtils.getWeaponMultiplier(weapon, selectedClass);
     let calculated = {};
+
     calculated.primaryStats = classInfo.primary
       .map(statName => stats[statName]);
     calculated.secondaryStats = classInfo.secondary
@@ -129,17 +131,50 @@ function App() {
     calculated.plus1PercentAll = FormulaUtils.damage(classInfo, calculated.attack, calculated.attackPercent / 100.0, calculated.finalStatPrimary, calculated.primaryBaseTotalStat, (1 + calculated.primaryStatPercents[0] / 100.0) + 0.01, calculated.finalStatSecondary, calculated.secondaryBaseTotalStat, (1 + calculated.secondaryStatPercents[0] / 100.0) + 0.01);
     calculated.percentAllDifference = calculated.plus1PercentAll - calculated.currentDmg;
 
-    calculated.attackEquivalence = calculated.attackDifference / calculated.primaryStatDifference;
-    calculated.secondaryEquivalence = calculated.primaryStatDifference / calculated.secondaryStatDifference;
-    calculated.percentAllEquivalence = calculated.percentAllDifference / calculated.primaryStatDifference;
+    calculated.primaryRatio = (calculated.primaryBaseTotalStat + 1) * (1 + calculated.primaryStatPercents[0]/ 100.0) + calculated.finalStatPrimary - calculated.primaryStats[0]
+    calculated.percentRatio = (calculated.primaryBaseTotalStat) * (1 + (calculated.primaryStatPercents[0] + 1)/ 100.0) + calculated.finalStatPrimary - calculated.primaryStats[0]
+    calculated.attackRatio = (calculated.primaryStats[0] + calculated.secondaryStats[0] / 4) / calculated.attack
+    calculated.secondaryRatio = (calculated.secondaryBaseTotalStat + 1) * (1 + calculated.secondaryStatPercents[0]/ 100.0) + calculated.finalStatSecondary - calculated.secondaryStats[0]
 
+    setStatEquivalence({
+      ...statEquivalence,
+      attackEquivalence: calculated.attackDifference / calculated.primaryStatDifference,
+      secondaryEquivalence: calculated.primaryStatDifference / calculated.secondaryStatDifference,
+      percentAllEquivalence: calculated.percentAllDifference / calculated.primaryStatDifference,
+      attackEquivalence2: calculated.attackRatio / calculated.primaryRatio,
+      secondaryEquivalence2: calculated.secondaryRatio / calculated.primaryRatio,
+      percentAllEquivalence2: calculated.percentRatio / calculated.primaryRatio
+    });
+
+    console.log('form data');
+    console.log(stats);
+    console.log(`class: ${selectedClass}`);
+    console.log(`weapon: ${weapon}`);
     console.log(calculated);
+    console.log(statEquivalence);
   }
 
   return (
     <>
       <Container><HeadingBar/></Container>
       <div className="App-Body">
+        { statEquivalence.attackEquivalence != null ? 
+          <Container>
+            <Row><Col><h4><u>Stat Equivalence</u></h4></Col></Row>
+            <Row><Col><label>1% All Stats:</label> {statEquivalence.percentAllEquivalence.toFixed(2)} primary stat</Col></Row>
+            <Row><Col><label>1 Attack:</label> {statEquivalence.attackEquivalence.toFixed(2)} primary stat</Col></Row>
+            <Row><Col><label>1 Secondary Stat:</label> {statEquivalence.secondaryEquivalence.toFixed(2)} primary stat</Col></Row>
+            <br/>
+            <Row><Col><label>Primary ratio:</label> {statEquivalence.primaryRatio.toFixed(2)}</Col></Row>
+            <Row><Col><label>1% ratio:</label> {statEquivalence.percentRatio.toFixed(2)}</Col></Row>
+            <Row><Col><label>Attack ratio:</label> {statEquivalence.attackRatio.toFixed(2)}</Col></Row>
+            <br/>
+            <Row><Col><label>1% All Stats 2:</label> {statEquivalence.percentAllEquivalence2.toFixed(2)} primary stat</Col></Row>
+            <Row><Col><label>1 Attack 2:</label> {statEquivalence.attackEquivalence2.toFixed(2)} primary stat</Col></Row>
+            <Row><Col><label>1 Secondary Stat 2:</label> {statEquivalence.secondaryEquivalence2.toFixed(2)} primary stat</Col></Row>
+          </Container>
+          : null
+        }
         <form onSubmit={handleSubmit}>
           <Container>
             <Row><Col><h4><u>Character Info</u></h4></Col></Row>
@@ -147,15 +182,15 @@ function App() {
               <Col><label>Class</label><DropdownSelector optionsList={ClassUtils.getClassNames()} selected={selectedClass} setSelected={setSelectedClass}/></Col>
               <Col><label>Main weapon</label><DropdownSelector optionsList={ClassUtils.getWeaponNames()} selected={weapon} setSelected={setWeapon}/></Col>
               <Col><StatBox statName={'Level'} stat={stats.level} type={'number'} setStatValue={s => {setStats({...stats, level: Number(s)})}}/></Col>
-              <Col><StatBox statName={'HP'} stat={stats.hp} type={'number'} setStatValue={s => {setStats({...stats, hp: Number(s)})}}/></Col>
-              <Col><StatBox statName={'MP'} stat={stats.mp} type={'number'} setStatValue={s => {setStats({...stats, mp: Number(s)})}}/></Col>
+              {/* <Col><StatBox statName={'HP'} stat={stats.hp} type={'number'} setStatValue={s => {setStats({...stats, hp: Number(s)})}}/></Col>
+              <Col><StatBox statName={'MP'} stat={stats.mp} type={'number'} setStatValue={s => {setStats({...stats, mp: Number(s)})}}/></Col> */}
               <Col><StatBox statName={'Upper Damage Range'} stat={stats.upperShownDmgRange} type={'number'} setStatValue={s => {setStats({...stats, upperShownDmgRange: Number(s)})}}/></Col>
             </Row>
             <Row>
-              <Col><StatBox statName={'STR'} stat={stats.STR} type={'number'} setStatValue={s => {setStats({...stats, STR: Number(s)})}}/></Col>
-              <Col><StatBox statName={'DEX'} stat={stats.DEX} type={'number'} setStatValue={s => {setStats({...stats, DEX: Number(s)})}}/></Col>
-              <Col><StatBox statName={'LUK'} stat={stats.LUK} type={'number'} setStatValue={s => {setStats({...stats, LUK: Number(s)})}}/></Col>
-              <Col><StatBox statName={'INT'} stat={stats.INT} type={'number'} setStatValue={s => {setStats({...stats, INT: Number(s)})}}/></Col>
+              <HideableStatColumn statName={'STR'} stat={stats.STR} type={'number'} setStatValue={s => {setStats({...stats, STR: Number(s)})}} classInfo={classInfo}/>
+              <HideableStatColumn statName={'DEX'} stat={stats.DEX} type={'number'} setStatValue={s => {setStats({...stats, DEX: Number(s)})}} classInfo={classInfo}/>
+              <HideableStatColumn statName={'LUK'} stat={stats.LUK} type={'number'} setStatValue={s => {setStats({...stats, LUK: Number(s)})}} classInfo={classInfo}/>
+              <HideableStatColumn statName={'INT'} stat={stats.INT} type={'number'} setStatValue={s => {setStats({...stats, INT: Number(s)})}} classInfo={classInfo}/>
             </Row>
             <Row>
               <Col><StatBox statName={'STR% on equips'} stat={stats.percentSTR} type={'number'} setStatValue={s => {setStats({...stats, percentSTR: Number(s)})}}/></Col>
@@ -167,13 +202,13 @@ function App() {
             <Row>
               <Col><StatBox statName={'Damage %'} stat={stats.dmgPercent} type={'number'} setStatValue={s => {setStats({...stats, dmgPercent: Number(s)})}}/></Col>
               <Col><StatBox statName={'Final Damage'} stat={stats.finalDmg} type={'number'} setStatValue={s => {setStats({...stats, finalDmg: Number(s)})}}/></Col>
-              <Col><StatBox statName={'Ignore Enemy Defense'} stat={stats.ied} type={'number'} setStatValue={s => {setStats({...stats, ied: Number(s)})}}/></Col>
-              <Col><StatBox statName={'Critical Rate'} stat={stats.critRate} type={'number'} setStatValue={s => {setStats({...stats, critRate: Number(s)})}}/></Col>
+              {/* <Col><StatBox statName={'Ignore Enemy Defense'} stat={stats.ied} type={'number'} setStatValue={s => {setStats({...stats, ied: Number(s)})}}/></Col>
+              <Col><StatBox statName={'Critical Rate'} stat={stats.critRate} type={'number'} setStatValue={s => {setStats({...stats, critRate: Number(s)})}}/></Col> */}
             </Row>
-            <Row>
+            {/* <Row>
               <Col><StatBox statName={'Critical Damage'} stat={stats.critDmg} type={'number'} setStatValue={s => {setStats({...stats, critDmg: Number(s)})}}/></Col>
               <Col><StatBox statName={'Boss Damage'} stat={stats.bossDmg} type={'number'} setStatValue={s => {setStats({...stats, bossDmg: Number(s)})}}/></Col>
-            </Row>
+            </Row> */}
             <Row>
               <Col><StatBox statName={'Main Stat(s) from Arcane/Sacred Symbols'} stat={stats.symbolStats} type={'number'} setStatValue={s => {setStats({...stats, symbolStats: Number(s)})}}/></Col>
               <Col><StatBox statName={'Main Stat(s) from Legion member bonuses'} stat={stats.legion.primary} type={'number'} setStatValue={s => {setStats({...stats, legion: {...stats.legion, primary: Number(s)}})}}/></Col>
