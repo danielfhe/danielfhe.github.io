@@ -1,22 +1,22 @@
 import Col from 'react-bootstrap/Col';
 
-export default function StatBox({ statName, stat, type, setStatValue }) {
+export default function StatBox({ label, stat, type, setStatValue }) {
     function onStatChange(e) {
         setStatValue(e.target.value);
     }
 
     return (
-        <label>{statName}
+        <label>{label}
             <input className="Stat-Box" type={type} min="0" defaultValue={stat} onChange={onStatChange}/>
         </label>
     );
 }
 
-export function HideableStatColumn({ statName, stat, type, setStatValue, classInfo }) {
+export function HideableStatColumn({ label, stat, type, setStatValue, shouldShow }) {
     return (
-        classInfo.primary.concat(classInfo.secondary).includes(statName) && 
+        shouldShow && 
             <Col>
-                <StatBox statName={statName} stat={stat} type={type} setStatValue={setStatValue}/>
+                <StatBox label={label} stat={stat} type={type} setStatValue={setStatValue}/>
             </Col>
     );
 }

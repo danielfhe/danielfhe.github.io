@@ -5,7 +5,7 @@ import DropdownSelector from './DropdownSelector.js';
 import Container from 'react-bootstrap/esm/Container';
 import Col from 'react-bootstrap/Col';
 import Row from 'react-bootstrap/Row';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import ClassUtils from './ClassUtils';
 import FormulaUtils from './FormulaUtils';
 
@@ -84,7 +84,7 @@ function App() {
     secondaryEquivalence: null,
     percentAllEquivalence: null
   })
-  const classInfo = ClassUtils.getClassInfo(selectedClass);
+  const classInfo = useMemo(() => ClassUtils.getClassInfo(selectedClass), [selectedClass]);
   
   const handleSubmit = (event) => {
     event.preventDefault();
@@ -181,38 +181,38 @@ function App() {
             <Row>
               <Col><label>Class</label><DropdownSelector optionsList={ClassUtils.getClassNames()} selected={selectedClass} setSelected={setSelectedClass}/></Col>
               <Col><label>Main weapon</label><DropdownSelector optionsList={ClassUtils.getWeaponNames()} selected={weapon} setSelected={setWeapon}/></Col>
-              <Col><StatBox statName={'Level'} stat={stats.level} type={'number'} setStatValue={s => {setStats({...stats, level: Number(s)})}}/></Col>
-              {/* <Col><StatBox statName={'HP'} stat={stats.hp} type={'number'} setStatValue={s => {setStats({...stats, hp: Number(s)})}}/></Col>
-              <Col><StatBox statName={'MP'} stat={stats.mp} type={'number'} setStatValue={s => {setStats({...stats, mp: Number(s)})}}/></Col> */}
-              <Col><StatBox statName={'Upper Damage Range'} stat={stats.upperShownDmgRange} type={'number'} setStatValue={s => {setStats({...stats, upperShownDmgRange: Number(s)})}}/></Col>
+              <Col><StatBox label={'Level'} stat={stats.level} type={'number'} setStatValue={s => {setStats({...stats, level: Number(s)})}}/></Col>
+              {/* <Col><StatBox label={'HP'} stat={stats.hp} type={'number'} setStatValue={s => {setStats({...stats, hp: Number(s)})}}/></Col>
+              <Col><StatBox label={'MP'} stat={stats.mp} type={'number'} setStatValue={s => {setStats({...stats, mp: Number(s)})}}/></Col> */}
+              <Col><StatBox label={'Upper Damage Range'} stat={stats.upperShownDmgRange} type={'number'} setStatValue={s => {setStats({...stats, upperShownDmgRange: Number(s)})}}/></Col>
             </Row>
             <Row>
-              <HideableStatColumn statName={'STR'} stat={stats.STR} type={'number'} setStatValue={s => {setStats({...stats, STR: Number(s)})}} classInfo={classInfo}/>
-              <HideableStatColumn statName={'DEX'} stat={stats.DEX} type={'number'} setStatValue={s => {setStats({...stats, DEX: Number(s)})}} classInfo={classInfo}/>
-              <HideableStatColumn statName={'LUK'} stat={stats.LUK} type={'number'} setStatValue={s => {setStats({...stats, LUK: Number(s)})}} classInfo={classInfo}/>
-              <HideableStatColumn statName={'INT'} stat={stats.INT} type={'number'} setStatValue={s => {setStats({...stats, INT: Number(s)})}} classInfo={classInfo}/>
+              <HideableStatColumn label={'STR'} stat={stats.STR} type={'number'} setStatValue={s => {setStats({...stats, STR: Number(s)})}} shouldShow={classInfo.primary.concat(classInfo.secondary).includes('STR')}/>
+              <HideableStatColumn label={'DEX'} stat={stats.DEX} type={'number'} setStatValue={s => {setStats({...stats, DEX: Number(s)})}} shouldShow={classInfo.primary.concat(classInfo.secondary).includes('DEX')}/>
+              <HideableStatColumn label={'LUK'} stat={stats.LUK} type={'number'} setStatValue={s => {setStats({...stats, LUK: Number(s)})}} shouldShow={classInfo.primary.concat(classInfo.secondary).includes('LUK')}/>
+              <HideableStatColumn label={'INT'} stat={stats.INT} type={'number'} setStatValue={s => {setStats({...stats, INT: Number(s)})}} shouldShow={classInfo.primary.concat(classInfo.secondary).includes('INT')}/>
             </Row>
             <Row>
-              <Col><StatBox statName={'STR% on equips'} stat={stats.percentSTR} type={'number'} setStatValue={s => {setStats({...stats, percentSTR: Number(s)})}}/></Col>
-              <Col><StatBox statName={'DEX% on equips'} stat={stats.percentDEX} type={'number'} setStatValue={s => {setStats({...stats, percentDEX: Number(s)})}}/></Col>
-              <Col><StatBox statName={'LUK% on equips'} stat={stats.percentLUK} type={'number'} setStatValue={s => {setStats({...stats, percentLUK: Number(s)})}}/></Col>
-              <Col><StatBox statName={'INT% on equips'} stat={stats.percentINT} type={'number'} setStatValue={s => {setStats({...stats, percentINT: Number(s)})}}/></Col>
-              <Col><StatBox statName={'All stat% on equips'} stat={stats.percentAllStat} type={'number'} setStatValue={s => {setStats({...stats, percentAllStat: Number(s)})}}/></Col>
+              <HideableStatColumn label={'STR% on equips'} stat={stats.percentSTR} type={'number'} setStatValue={s => {setStats({...stats, percentSTR: Number(s)})}} shouldShow={classInfo.primary.concat(classInfo.secondary).includes('STR')}/>
+              <HideableStatColumn label={'DEX% on equips'} stat={stats.percentDEX} type={'number'} setStatValue={s => {setStats({...stats, percentDEX: Number(s)})}} shouldShow={classInfo.primary.concat(classInfo.secondary).includes('DEX')}/>
+              <HideableStatColumn label={'LUK% on equips'} stat={stats.percentLUK} type={'number'} setStatValue={s => {setStats({...stats, percentLUK: Number(s)})}} shouldShow={classInfo.primary.concat(classInfo.secondary).includes('LUK')}/>
+              <HideableStatColumn label={'INT% on equips'} stat={stats.percentINT} type={'number'} setStatValue={s => {setStats({...stats, percentINT: Number(s)})}} shouldShow={classInfo.primary.concat(classInfo.secondary).includes('INT')}/>
+              <Col><StatBox label={'All stat% on equips'} stat={stats.percentAllStat} type={'number'} setStatValue={s => {setStats({...stats, percentAllStat: Number(s)})}}/></Col>
             </Row>
             <Row>
-              <Col><StatBox statName={'Damage %'} stat={stats.dmgPercent} type={'number'} setStatValue={s => {setStats({...stats, dmgPercent: Number(s)})}}/></Col>
-              <Col><StatBox statName={'Final Damage'} stat={stats.finalDmg} type={'number'} setStatValue={s => {setStats({...stats, finalDmg: Number(s)})}}/></Col>
-              {/* <Col><StatBox statName={'Ignore Enemy Defense'} stat={stats.ied} type={'number'} setStatValue={s => {setStats({...stats, ied: Number(s)})}}/></Col>
-              <Col><StatBox statName={'Critical Rate'} stat={stats.critRate} type={'number'} setStatValue={s => {setStats({...stats, critRate: Number(s)})}}/></Col> */}
+              <Col><StatBox label={'Damage %'} stat={stats.dmgPercent} type={'number'} setStatValue={s => {setStats({...stats, dmgPercent: Number(s)})}}/></Col>
+              <Col><StatBox label={'Final Damage'} stat={stats.finalDmg} type={'number'} setStatValue={s => {setStats({...stats, finalDmg: Number(s)})}}/></Col>
+              {/* <Col><StatBox label={'Ignore Enemy Defense'} stat={stats.ied} type={'number'} setStatValue={s => {setStats({...stats, ied: Number(s)})}}/></Col>
+              <Col><StatBox label={'Critical Rate'} stat={stats.critRate} type={'number'} setStatValue={s => {setStats({...stats, critRate: Number(s)})}}/></Col> */}
             </Row>
             {/* <Row>
-              <Col><StatBox statName={'Critical Damage'} stat={stats.critDmg} type={'number'} setStatValue={s => {setStats({...stats, critDmg: Number(s)})}}/></Col>
-              <Col><StatBox statName={'Boss Damage'} stat={stats.bossDmg} type={'number'} setStatValue={s => {setStats({...stats, bossDmg: Number(s)})}}/></Col>
+              <Col><StatBox label={'Critical Damage'} stat={stats.critDmg} type={'number'} setStatValue={s => {setStats({...stats, critDmg: Number(s)})}}/></Col>
+              <Col><StatBox label={'Boss Damage'} stat={stats.bossDmg} type={'number'} setStatValue={s => {setStats({...stats, bossDmg: Number(s)})}}/></Col>
             </Row> */}
             <Row>
-              <Col><StatBox statName={'Main Stat(s) from Arcane/Sacred Symbols'} stat={stats.symbolStats} type={'number'} setStatValue={s => {setStats({...stats, symbolStats: Number(s)})}}/></Col>
-              <Col><StatBox statName={'Main Stat(s) from Legion member bonuses'} stat={stats.legion.primary} type={'number'} setStatValue={s => {setStats({...stats, legion: {...stats.legion, primary: Number(s)}})}}/></Col>
-              <Col><StatBox statName={'Secondary Stat(s) from Legion member bonuses'} stat={stats.legion.secondary} type={'number'} setStatValue={s => {setStats({...stats, legion: {...stats.legion, secondary: Number(s)}})}}/></Col>
+              <Col><StatBox label={'Main Stat(s) from Arcane/Sacred Symbols'} stat={stats.symbolStats} type={'number'} setStatValue={s => {setStats({...stats, symbolStats: Number(s)})}}/></Col>
+              <Col><StatBox label={'Main Stat(s) from Legion member bonuses'} stat={stats.legion.primary} type={'number'} setStatValue={s => {setStats({...stats, legion: {...stats.legion, primary: Number(s)}})}}/></Col>
+              <Col><StatBox label={'Secondary Stat(s) from Legion member bonuses'} stat={stats.legion.secondary} type={'number'} setStatValue={s => {setStats({...stats, legion: {...stats.legion, secondary: Number(s)}})}}/></Col>
             </Row>
             <Row><Col><h4><u>Equipment</u></h4></Col></Row>
             <Row>
@@ -312,8 +312,8 @@ function App() {
             <Row><Col><h4><u>Familiars</u></h4></Col></Row>
             <Row><Col><h5>Badge Effect</h5></Col><Col><h5>Potential</h5></Col></Row>
             <Row>
-              <Col><StatBox statName={'Total Attack %'} stat={stats.familiarBadgeAtt} type={'number'} setStatValue={s => {setStats({...stats, familiarBadgeAtt: Number(s)})}}/></Col>
-              <Col><StatBox statName={'Total Attack %'} stat={stats.familiarPotentialAtt} type={'number'} setStatValue={s => {setStats({...stats, familiarPotentialAtt: Number(s)})}}/></Col>
+              <Col><StatBox label={'Total Attack %'} stat={stats.familiarBadgeAtt} type={'number'} setStatValue={s => {setStats({...stats, familiarBadgeAtt: Number(s)})}}/></Col>
+              <Col><StatBox label={'Total Attack %'} stat={stats.familiarPotentialAtt} type={'number'} setStatValue={s => {setStats({...stats, familiarPotentialAtt: Number(s)})}}/></Col>
             </Row>
             <br/>
             <Row>
