@@ -35,8 +35,6 @@ function App() {
     symbolStats: 0,
     bonusPotentialAtt: 0,
     magnificentSoul: false,
-    familiarBadgeAtt: 0,
-    familiarPotentialAtt: 0,
     weapon: {
       highLevel: false,
       primaryLine: 'N/A',
@@ -77,6 +75,12 @@ function App() {
     legion: {
       primary: 0,
       secondary: 0
+    },
+    familiar: {
+      badgeAttPercentSum: 0,
+      badgePrimarySum: 0,
+      potentialAttPercentSum: 0,
+      potentialPrimarySum: 0
     }
   });
   const [statEquivalence, setStatEquivalence] = useState({
@@ -105,8 +109,8 @@ function App() {
     calculated.hyperSecondaryStats = classInfo.primary
       .map(statName => stats.hyper[statName]);
 
-    calculated.attackPercent = 100.0 + (stats.magnificentSoul ? 3 : 0) + stats.familiarBadgeAtt + 
-      stats.familiarPotentialAtt + stats.bonusPotentialAtt + classInfo.attPercent + FormulaUtils.getWeaponSecondaryEmblemAttack(stats);
+    calculated.attackPercent = 100.0 + (stats.magnificentSoul ? 3 : 0) + stats.familiar.badgeAttPercentSum + 
+      stats.familiar.potentialAttPercentSum + stats.bonusPotentialAtt + classInfo.attPercent + FormulaUtils.getWeaponSecondaryEmblemAttack(stats);
     // 100 + soul + familiar badges + familiar potential + bonus potential att % (non-reboot) + class att % + attack from WSE
     calculated.statValue = FormulaUtils.getStatValue(selectedClass, calculated.primaryStatSum, calculated.secondaryStatSum);
     calculated.totalJobAttack = FormulaUtils.getTotalJobAttack(stats.upperShownDmgRange, weaponMultiplier, calculated.statValue, stats.dmgPercent, stats.finalDmg)
@@ -221,9 +225,9 @@ function App() {
               <Col><b>Emblem</b></Col>
             </Row>
             <Row>
-              <Col><input id="weaponLevel" type="checkbox" checked={stats.weapon.highLevel} onChange={s => {setStats({...stats, weapon: {highLevel: !stats.weapon.highLevel, primaryLine: 'N/A', secondaryLine: 'N/A', tertiaryLine: 'N/A'}})}}/> <label for="weaponLevel">Lvl 150+</label></Col>
-              <Col><input id="secondaryLevel" type="checkbox" checked={stats.secondary.highLevel} onChange={s => {setStats({...stats, secondary: {highLevel: !stats.secondary.highLevel, primaryLine: 'N/A', secondaryLine: 'N/A', tertiaryLine: 'N/A'}})}}/> <label for="secondaryLevel">Lvl 150+</label></Col>
-              <Col><input id="emblemLevel" type="checkbox" checked={stats.emblem.highLevel} onChange={s => {setStats({...stats, emblem: {highLevel: !stats.emblem.highLevel, primaryLine: 'N/A', secondaryLine: 'N/A', tertiaryLine: 'N/A'}})}}/> <label for="emblemLevel">Lvl 150+</label></Col>
+              <Col><input id="weaponLevel" type="checkbox" checked={stats.weapon.highLevel} onChange={_s => {setStats({...stats, weapon: {highLevel: !stats.weapon.highLevel, primaryLine: 'N/A', secondaryLine: 'N/A', tertiaryLine: 'N/A'}})}}/> <label for="weaponLevel">Lvl 150+</label></Col>
+              <Col><input id="secondaryLevel" type="checkbox" checked={stats.secondary.highLevel} onChange={_s => {setStats({...stats, secondary: {highLevel: !stats.secondary.highLevel, primaryLine: 'N/A', secondaryLine: 'N/A', tertiaryLine: 'N/A'}})}}/> <label for="secondaryLevel">Lvl 150+</label></Col>
+              <Col><input id="emblemLevel" type="checkbox" checked={stats.emblem.highLevel} onChange={_s => {setStats({...stats, emblem: {highLevel: !stats.emblem.highLevel, primaryLine: 'N/A', secondaryLine: 'N/A', tertiaryLine: 'N/A'}})}}/> <label for="emblemLevel">Lvl 150+</label></Col>
             </Row>
             <Row>
               <Col>Primary line <DropdownSelector optionsList={FormulaUtils.getPrimaryPotentialOptions(stats.weapon.highLevel)} selected={stats.weapon.primaryLine} setSelected={s => {setStats({...stats, weapon: {...stats.weapon, primaryLine: s}})}}/></Col>
@@ -247,73 +251,77 @@ function App() {
             <Row><Col><h4><u>Hyper Stats</u></h4></Col></Row>
             <Row>
               <Col md={{span: 2, offset: 0}}>STR</Col>
-              <Col md={1}><DropdownSelector optionsList={Array.from({length: 16}, (v, i) => i)} selected={stats.hyper.STR} setSelected={s => {setStats({...stats, hyper: {...stats.hyper, STR: s}})}}/></Col>
+              <Col md={1}><DropdownSelector optionsList={Array.from({length: 16}, (_v, i) => i)} selected={stats.hyper.STR} setSelected={s => {setStats({...stats, hyper: {...stats.hyper, STR: s}})}}/></Col>
             </Row>
             <Row>
               <Col md={{span: 2, offset: 0}}>DEX</Col>
-              <Col md={1}><DropdownSelector optionsList={Array.from({length: 16}, (v, i) => i)} selected={stats.hyper.DEX} setSelected={s => {setStats({...stats, hyper: {...stats.hyper, DEX: s}})}}/></Col>
+              <Col md={1}><DropdownSelector optionsList={Array.from({length: 16}, (_v, i) => i)} selected={stats.hyper.DEX} setSelected={s => {setStats({...stats, hyper: {...stats.hyper, DEX: s}})}}/></Col>
             </Row>
             <Row>
               <Col md={{span: 2, offset: 0}}>LUK</Col>
-              <Col md={1}><DropdownSelector optionsList={Array.from({length: 16}, (v, i) => i)} selected={stats.hyper.LUK} setSelected={s => {setStats({...stats, hyper: {...stats.hyper, LUK: s}})}}/></Col>
+              <Col md={1}><DropdownSelector optionsList={Array.from({length: 16}, (_v, i) => i)} selected={stats.hyper.LUK} setSelected={s => {setStats({...stats, hyper: {...stats.hyper, LUK: s}})}}/></Col>
             </Row>
             <Row>
               <Col md={{span: 2, offset: 0}}>INT</Col>
-              <Col md={1}><DropdownSelector optionsList={Array.from({length: 16}, (v, i) => i)} selected={stats.hyper.INT} setSelected={s => {setStats({...stats, hyper: {...stats.hyper, INT: s}})}}/></Col>
+              <Col md={1}><DropdownSelector optionsList={Array.from({length: 16}, (_v, i) => i)} selected={stats.hyper.INT} setSelected={s => {setStats({...stats, hyper: {...stats.hyper, INT: s}})}}/></Col>
             </Row>
             <Row>
               <Col md={{span: 2, offset: 0}}>HP</Col>
-              <Col md={1}><DropdownSelector optionsList={Array.from({length: 16}, (v, i) => i)} selected={stats.hyper.hp} setSelected={s => {setStats({...stats, hyper: {...stats.hyper, hp: s}})}}/></Col>
+              <Col md={1}><DropdownSelector optionsList={Array.from({length: 16}, (_v, i) => i)} selected={stats.hyper.hp} setSelected={s => {setStats({...stats, hyper: {...stats.hyper, hp: s}})}}/></Col>
             </Row>
             <Row>
               <Col md={{span: 2, offset: 0}}>MP</Col>
-              <Col md={1}><DropdownSelector optionsList={Array.from({length: 16}, (v, i) => i)} selected={stats.hyper.mp} setSelected={s => {setStats({...stats, hyper: {...stats.hyper, mp: s}})}}/></Col>
+              <Col md={1}><DropdownSelector optionsList={Array.from({length: 16}, (_v, i) => i)} selected={stats.hyper.mp} setSelected={s => {setStats({...stats, hyper: {...stats.hyper, mp: s}})}}/></Col>
             </Row>
             <Row>
               <Col md={{span: 2, offset: 0}}>DF/TF/Mana</Col>
-              <Col md={1}><DropdownSelector optionsList={Array.from({length: 11}, (v, i) => i)} selected={stats.hyper.dftfmana} setSelected={s => {setStats({...stats, hyper: {...stats.hyper, dftfmana: s}})}}/></Col>
+              <Col md={1}><DropdownSelector optionsList={Array.from({length: 11}, (_v, i) => i)} selected={stats.hyper.dftfmana} setSelected={s => {setStats({...stats, hyper: {...stats.hyper, dftfmana: s}})}}/></Col>
             </Row>
             <Row>
               <Col md={{span: 2, offset: 0}}>Critical Rate</Col>
-              <Col md={1}><DropdownSelector optionsList={Array.from({length: 16}, (v, i) => i)} selected={stats.hyper.critRate} setSelected={s => {setStats({...stats, hyper: {...stats.hyper, critRate: s}})}}/></Col>
+              <Col md={1}><DropdownSelector optionsList={Array.from({length: 16}, (_v, i) => i)} selected={stats.hyper.critRate} setSelected={s => {setStats({...stats, hyper: {...stats.hyper, critRate: s}})}}/></Col>
             </Row>
             <Row>
               <Col md={{span: 2, offset: 0}}>Critical Damage</Col>
-              <Col md={1}><DropdownSelector optionsList={Array.from({length: 16}, (v, i) => i)} selected={stats.hyper.critDmg} setSelected={s => {setStats({...stats, hyper: {...stats.hyper, critDmg: s}})}}/></Col>
+              <Col md={1}><DropdownSelector optionsList={Array.from({length: 16}, (_v, i) => i)} selected={stats.hyper.critDmg} setSelected={s => {setStats({...stats, hyper: {...stats.hyper, critDmg: s}})}}/></Col>
             </Row>
             <Row>
               <Col md={{span: 2, offset: 0}}>IED</Col>
-              <Col md={1}><DropdownSelector optionsList={Array.from({length: 16}, (v, i) => i)} selected={stats.hyper.ied} setSelected={s => {setStats({...stats, hyper: {...stats.hyper, ied: s}})}}/></Col>
+              <Col md={1}><DropdownSelector optionsList={Array.from({length: 16}, (_v, i) => i)} selected={stats.hyper.ied} setSelected={s => {setStats({...stats, hyper: {...stats.hyper, ied: s}})}}/></Col>
             </Row>
             <Row>
               <Col md={{span: 2, offset: 0}}>Damage</Col>
-              <Col md={1}><DropdownSelector optionsList={Array.from({length: 16}, (v, i) => i)} selected={stats.hyper.dmg} setSelected={s => {setStats({...stats, hyper: {...stats.hyper, dmg: s}})}}/></Col>
+              <Col md={1}><DropdownSelector optionsList={Array.from({length: 16}, (_v, i) => i)} selected={stats.hyper.dmg} setSelected={s => {setStats({...stats, hyper: {...stats.hyper, dmg: s}})}}/></Col>
             </Row>
             <Row>
               <Col md={{span: 2, offset: 0}}>Boss Damage</Col>
-              <Col md={1}><DropdownSelector optionsList={Array.from({length: 16}, (v, i) => i)} selected={stats.hyper.bossDmg} setSelected={s => {setStats({...stats, hyper: {...stats.hyper, bossDmg: s}})}}/></Col>
+              <Col md={1}><DropdownSelector optionsList={Array.from({length: 16}, (_v, i) => i)} selected={stats.hyper.bossDmg} setSelected={s => {setStats({...stats, hyper: {...stats.hyper, bossDmg: s}})}}/></Col>
             </Row>
             <Row>
               <Col md={{span: 2, offset: 0}}>Status Resistance</Col>
-              <Col md={1}><DropdownSelector optionsList={Array.from({length: 16}, (v, i) => i)} selected={stats.hyper.statusResistance} setSelected={s => {setStats({...stats, hyper: {...stats.hyper, statusResistance: s}})}}/></Col>
+              <Col md={1}><DropdownSelector optionsList={Array.from({length: 16}, (_v, i) => i)} selected={stats.hyper.statusResistance} setSelected={s => {setStats({...stats, hyper: {...stats.hyper, statusResistance: s}})}}/></Col>
             </Row>
             <Row>
               <Col md={{span: 2, offset: 0}}>Knockback Resistance</Col>
-              <Col md={1}><DropdownSelector optionsList={Array.from({length: 16}, (v, i) => i)} selected={stats.hyper.knockbackResistance} setSelected={s => {setStats({...stats, hyper: {...stats.hyper, knockbackResistance: s}})}}/></Col>
+              <Col md={1}><DropdownSelector optionsList={Array.from({length: 16}, (_v, i) => i)} selected={stats.hyper.knockbackResistance} setSelected={s => {setStats({...stats, hyper: {...stats.hyper, knockbackResistance: s}})}}/></Col>
             </Row>
             <Row>
               <Col md={{span: 2, offset: 0}}>Weapon and Magic ATT</Col>
-              <Col md={1}><DropdownSelector optionsList={Array.from({length: 16}, (v, i) => i)} selected={stats.hyper.jobAtt} setSelected={s => {setStats({...stats, hyper: {...stats.hyper, jobAtt: s}})}}/></Col>
+              <Col md={1}><DropdownSelector optionsList={Array.from({length: 16}, (_v, i) => i)} selected={stats.hyper.jobAtt} setSelected={s => {setStats({...stats, hyper: {...stats.hyper, jobAtt: s}})}}/></Col>
             </Row>
             <Row><Col><h4><u>Souls</u></h4></Col></Row>
             <Row>
-              <Col><input id="magnificentSoul" type="checkbox" checked={stats.magnificentSoul} onChange={s => {setStats({...stats, magnificentSoul: !stats.magnificentSoul})}}/> <label for="magnificentSoul">Magnificent (ATT +3%)</label></Col>
+              <Col><input id="magnificentSoul" type="checkbox" checked={stats.magnificentSoul} onChange={_s => {setStats({...stats, magnificentSoul: !stats.magnificentSoul})}}/> <label for="magnificentSoul">Magnificent (ATT +3%)</label></Col>
             </Row>
             <Row><Col><h4><u>Familiars</u></h4></Col></Row>
-            <Row><Col><h5>Badge Effect</h5></Col><Col><h5>Potential</h5></Col></Row>
+            <Row><Col><h5>Badge Effect</h5></Col><Col><h5>Potentials</h5></Col></Row>
             <Row>
-              <Col><StatBox label={'Total Attack %'} stat={stats.familiarBadgeAtt} type={'number'} setStatValue={s => {setStats({...stats, familiarBadgeAtt: Number(s)})}}/></Col>
-              <Col><StatBox label={'Total Attack %'} stat={stats.familiarPotentialAtt} type={'number'} setStatValue={s => {setStats({...stats, familiarPotentialAtt: Number(s)})}}/></Col>
+              <Col><StatBox label={'Total Attack %'} stat={stats.familiar.badgeAttPercentSum} type={'number'} setStatValue={s => {setStats({...stats, familiar: {...stats.familiar, badgeAttPercentSum: Number(s)}})}}/></Col>
+              <Col><StatBox label={'Total Attack %'} stat={stats.familiar.potentialAttPercentSum} type={'number'} setStatValue={s => {setStats({...stats, familiar: {...stats.familiar, potentialAttPercentSum: Number(s)}})}}/></Col>
+            </Row>
+            <Row>
+              <Col><StatBox label={'Primary Stat'} stat={stats.familiar.badgePrimarySum} type={'number'} setStatValue={s => {setStats({...stats, familiar: {...stats.familiar, badgePrimarySum: Number(s)}})}}/></Col>
+              <Col><StatBox label={'Primary Stat'} stat={stats.familiar.potentialPrimarySum} type={'number'} setStatValue={s => {setStats({...stats, familiar: {...stats.familiar, potentialPrimarySum: Number(s)}})}}/></Col>
             </Row>
             <br/>
             <Row>
