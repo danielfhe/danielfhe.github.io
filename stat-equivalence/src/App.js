@@ -17,15 +17,28 @@ function App() {
     hp: 0,
     mp: 0,
     upperShownDmgRange: 0,
-    STR: 0,
-    DEX: 0,
-    LUK: 0,
-    INT: 0,
-    percentSTR: 0,
-    percentDEX: 0,
-    percentLUK: 0,
-    percentINT: 0,
+    STR: {
+      total: 0,
+      ap: 0,
+      percent: 0
+    },
+    DEX: {
+      total: 0,
+      ap: 0,
+      percent: 0
+    },
+    LUK: {
+      total: 0,
+      ap: 0,
+      percent: 0
+    },
+    INT: {
+      total: 0,
+      ap: 0,
+      percent: 0
+    },
     percentAllStat: 0,
+    percentAP: 0,
     dmgPercent: 0,
     finalDmg: 0,
     ied: 0,
@@ -79,8 +92,10 @@ function App() {
     familiar: {
       badgeAttPercentSum: 0,
       badgePrimarySum: 0,
+      badgeAllStatSum: 0,
       potentialAttPercentSum: 0,
-      potentialPrimarySum: 0
+      potentialPrimarySum: 0,
+      potentialAllStatSum: 0
     }
   });
   const [statEquivalence, setStatEquivalence] = useState({
@@ -97,13 +112,17 @@ function App() {
     let calculated = {};
 
     calculated.primaryStats = classInfo.primary
-      .map(statName => stats[statName]);
+      .map(statName => stats[statName].total);
     calculated.secondaryStats = classInfo.secondary
-      .map(statName => stats[statName]);
+      .map(statName => stats[statName].total);
+    calculated.primaryStatAPs = classInfo.primary
+      .map(statName => stats[statName].ap);
+    calculated.secondaryStatAPs = classInfo.secondary
+      .map(statName => stats[statName].ap);
     calculated.primaryStatSum = calculated.primaryStats.reduce((a, b) => a + b, 0);
     calculated.secondaryStatSum = calculated.secondaryStats.reduce((a, b) => a + b, 0);
-    calculated.primaryStatPercents = classInfo.primary.map(statName => stats[`percent${statName}`]);
-    calculated.secondaryStatPercents = classInfo.secondary.map(statName => stats[`percent${statName}`]);
+    calculated.primaryStatPercents = classInfo.primary.map(statName => stats[statName].percent + stats.percentAllStat);
+    calculated.secondaryStatPercents = classInfo.secondary.map(statName => stats[statName].percent + stats.percentAllStat);
     calculated.hyperPrimaryStats = classInfo.primary
       .map(statName => stats.hyper[statName]);
     calculated.hyperSecondaryStats = classInfo.primary
@@ -142,12 +161,9 @@ function App() {
 
     setStatEquivalence({
       ...statEquivalence,
-      attackEquivalence: calculated.attackDifference / calculated.primaryStatDifference,
-      secondaryEquivalence: calculated.primaryStatDifference / calculated.secondaryStatDifference,
-      percentAllEquivalence: calculated.percentAllDifference / calculated.primaryStatDifference,
-      attackEquivalence2: calculated.attackRatio / calculated.primaryRatio,
-      secondaryEquivalence2: calculated.secondaryRatio / calculated.primaryRatio,
-      percentAllEquivalence2: calculated.percentRatio / calculated.primaryRatio
+      attackEquivalence: calculated.attackRatio / calculated.primaryRatio,
+      secondaryEquivalence: calculated.secondaryRatio / calculated.primaryRatio,
+      percentAllEquivalence: calculated.percentRatio / calculated.primaryRatio
     });
 
     console.log('form data');
@@ -172,10 +188,6 @@ function App() {
             <Row><Col><label>Primary ratio:</label> {statEquivalence.primaryRatio.toFixed(2)}</Col></Row>
             <Row><Col><label>1% ratio:</label> {statEquivalence.percentRatio.toFixed(2)}</Col></Row>
             <Row><Col><label>Attack ratio:</label> {statEquivalence.attackRatio.toFixed(2)}</Col></Row>
-            <br/>
-            <Row><Col><label>1% All Stats 2:</label> {statEquivalence.percentAllEquivalence2.toFixed(2)} primary stat</Col></Row>
-            <Row><Col><label>1 Attack 2:</label> {statEquivalence.attackEquivalence2.toFixed(2)} primary stat</Col></Row>
-            <Row><Col><label>1 Secondary Stat 2:</label> {statEquivalence.secondaryEquivalence2.toFixed(2)} primary stat</Col></Row>
           </Container>
           : null
         }
@@ -191,17 +203,24 @@ function App() {
               <Col><StatBox label={'Upper Damage Range'} stat={stats.upperShownDmgRange} type={'number'} setStatValue={s => {setStats({...stats, upperShownDmgRange: Number(s)})}}/></Col>
             </Row>
             <Row>
-              <HideableStatColumn label={'STR'} stat={stats.STR} type={'number'} setStatValue={s => {setStats({...stats, STR: Number(s)})}} shouldShow={classInfo.primary.concat(classInfo.secondary).includes('STR')}/>
-              <HideableStatColumn label={'DEX'} stat={stats.DEX} type={'number'} setStatValue={s => {setStats({...stats, DEX: Number(s)})}} shouldShow={classInfo.primary.concat(classInfo.secondary).includes('DEX')}/>
-              <HideableStatColumn label={'LUK'} stat={stats.LUK} type={'number'} setStatValue={s => {setStats({...stats, LUK: Number(s)})}} shouldShow={classInfo.primary.concat(classInfo.secondary).includes('LUK')}/>
-              <HideableStatColumn label={'INT'} stat={stats.INT} type={'number'} setStatValue={s => {setStats({...stats, INT: Number(s)})}} shouldShow={classInfo.primary.concat(classInfo.secondary).includes('INT')}/>
+              <HideableStatColumn label={'STR'} stat={stats.STR.total} type={'number'} setStatValue={s => {setStats({...stats, STR: {...stats.STR, total: Number(s)}})}} shouldShow={classInfo.primary.concat(classInfo.secondary).includes('STR')}/>
+              <HideableStatColumn label={'DEX'} stat={stats.DEX.total} type={'number'} setStatValue={s => {setStats({...stats, DEX: {...stats.DEX, total: Number(s)}})}} shouldShow={classInfo.primary.concat(classInfo.secondary).includes('DEX')}/>
+              <HideableStatColumn label={'LUK'} stat={stats.LUK.total} type={'number'} setStatValue={s => {setStats({...stats, LUK: {...stats.LUK, total: Number(s)}})}} shouldShow={classInfo.primary.concat(classInfo.secondary).includes('LUK')}/>
+              <HideableStatColumn label={'INT'} stat={stats.INT.total} type={'number'} setStatValue={s => {setStats({...stats, INT: {...stats.INT, total: Number(s)}})}} shouldShow={classInfo.primary.concat(classInfo.secondary).includes('INT')}/>
             </Row>
+            {/* <Row>
+              <HideableStatColumn label={'STR AP'} stat={stats.STR.total} type={'number'} setStatValue={s => {setStats({...stats, STR: {...stats.STR, ap: Number(s)}})}} shouldShow={classInfo.primary.concat(classInfo.secondary).includes('STR')}/>
+              <HideableStatColumn label={'DEX AP'} stat={stats.DEX.total} type={'number'} setStatValue={s => {setStats({...stats, DEX: {...stats.DEX, ap: Number(s)}})}} shouldShow={classInfo.primary.concat(classInfo.secondary).includes('DEX')}/>
+              <HideableStatColumn label={'LUK AP'} stat={stats.LUK.total} type={'number'} setStatValue={s => {setStats({...stats, LUK: {...stats.LUK, ap: Number(s)}})}} shouldShow={classInfo.primary.concat(classInfo.secondary).includes('LUK')}/>
+              <HideableStatColumn label={'INT AP'} stat={stats.INT.total} type={'number'} setStatValue={s => {setStats({...stats, INT: {...stats.INT, ap: Number(s)}})}} shouldShow={classInfo.primary.concat(classInfo.secondary).includes('INT')}/>
+            </Row> */}
             <Row>
-              <HideableStatColumn label={'STR% on equips'} stat={stats.percentSTR} type={'number'} setStatValue={s => {setStats({...stats, percentSTR: Number(s)})}} shouldShow={classInfo.primary.concat(classInfo.secondary).includes('STR')}/>
-              <HideableStatColumn label={'DEX% on equips'} stat={stats.percentDEX} type={'number'} setStatValue={s => {setStats({...stats, percentDEX: Number(s)})}} shouldShow={classInfo.primary.concat(classInfo.secondary).includes('DEX')}/>
-              <HideableStatColumn label={'LUK% on equips'} stat={stats.percentLUK} type={'number'} setStatValue={s => {setStats({...stats, percentLUK: Number(s)})}} shouldShow={classInfo.primary.concat(classInfo.secondary).includes('LUK')}/>
-              <HideableStatColumn label={'INT% on equips'} stat={stats.percentINT} type={'number'} setStatValue={s => {setStats({...stats, percentINT: Number(s)})}} shouldShow={classInfo.primary.concat(classInfo.secondary).includes('INT')}/>
+              <HideableStatColumn label={'STR% on equips'} stat={stats.STR.percent} type={'number'} setStatValue={s => {setStats({...stats, STR: {...stats.STR, percent: Number(s)}})}} shouldShow={classInfo.primary.concat(classInfo.secondary).includes('STR')}/>
+              <HideableStatColumn label={'DEX% on equips'} stat={stats.DEX.percent} type={'number'} setStatValue={s => {setStats({...stats, DEX: {...stats.DEX, percent: Number(s)}})}} shouldShow={classInfo.primary.concat(classInfo.secondary).includes('DEX')}/>
+              <HideableStatColumn label={'LUK% on equips'} stat={stats.LUK.percent} type={'number'} setStatValue={s => {setStats({...stats, LUK: {...stats.LUK, percent: Number(s)}})}} shouldShow={classInfo.primary.concat(classInfo.secondary).includes('LUK')}/>
+              <HideableStatColumn label={'INT% on equips'} stat={stats.INT.percent} type={'number'} setStatValue={s => {setStats({...stats, INT: {...stats.INT, percent: Number(s)}})}} shouldShow={classInfo.primary.concat(classInfo.secondary).includes('INT')}/>
               <Col><StatBox label={'All stat% on equips'} stat={stats.percentAllStat} type={'number'} setStatValue={s => {setStats({...stats, percentAllStat: Number(s)})}}/></Col>
+              {/* <Col><StatBox label={'AP%'} stat={stats.percentAP} type={'number'} setStatValue={s => {setStats({...stats, percentAP: Number(s)})}}/></Col> */}
             </Row>
             <Row>
               <Col><StatBox label={'Damage %'} stat={stats.dmgPercent} type={'number'} setStatValue={s => {setStats({...stats, dmgPercent: Number(s)})}}/></Col>
@@ -246,7 +265,7 @@ function App() {
             </Row>
             <Row><Col><h4><u>Bonus Potentials</u></h4></Col></Row>
             <Row>
-              <Col><StatBox statName={'Total Attack %'} stat={stats.bonusPotentialAtt} type={'number'} setStatValue={s => {setStats({...stats, bonusPotentialAtt: Number(s)})}}/></Col>
+              <Col><StatBox label={'Total Attack %'} stat={stats.bonusPotentialAtt} type={'number'} setStatValue={s => {setStats({...stats, bonusPotentialAtt: Number(s)})}}/></Col>
             </Row>
             <Row><Col><h4><u>Hyper Stats</u></h4></Col></Row>
             <Row>
@@ -322,6 +341,10 @@ function App() {
             <Row>
               <Col><StatBox label={'Primary Stat'} stat={stats.familiar.badgePrimarySum} type={'number'} setStatValue={s => {setStats({...stats, familiar: {...stats.familiar, badgePrimarySum: Number(s)}})}}/></Col>
               <Col><StatBox label={'Primary Stat'} stat={stats.familiar.potentialPrimarySum} type={'number'} setStatValue={s => {setStats({...stats, familiar: {...stats.familiar, potentialPrimarySum: Number(s)}})}}/></Col>
+            </Row>
+            <Row>
+              <Col><StatBox label={'All Stat'} stat={stats.familiar.badgeAllStatSum} type={'number'} setStatValue={s => {setStats({...stats, familiar: {...stats.familiar, badgeAllStatSum: Number(s)}})}}/></Col>
+              <Col><StatBox label={'All Stat'} stat={stats.familiar.potentialAllStatSum} type={'number'} setStatValue={s => {setStats({...stats, familiar: {...stats.familiar, potentialAllStatSum: Number(s)}})}}/></Col>
             </Row>
             <br/>
             <Row>
