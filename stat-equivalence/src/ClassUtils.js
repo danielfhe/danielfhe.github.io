@@ -24,6 +24,10 @@ export default class ClassUtils {
 
     return multiplier;
   }
+
+  static getInitialStats() {
+    return initialStats;
+  }
 }
 
 let classes = {
@@ -360,3 +364,90 @@ let weapons = {
   'Whip Blade': { multiplier: 1.3125 },
   'Whispershot': { multiplier: 1.30 }
 }
+
+let initialStats = {
+  level: 0,
+  hp: 0,
+  mp: 0,
+  upperShownDmgRange: 0,
+  STR: {
+    total: 0,
+    ap: 0,
+    percent: 0
+  },
+  DEX: {
+    total: 0,
+    ap: 0,
+    percent: 0
+  },
+  LUK: {
+    total: 0,
+    ap: 0,
+    percent: 0
+  },
+  INT: {
+    total: 0,
+    ap: 0,
+    percent: 0
+  },
+  percentAllStat: 0,
+  percentAP: 0,
+  dmgPercent: 0,
+  finalDmg: 0,
+  ied: 0,
+  critRate: 0,
+  critDmg: 0,
+  bossDmg: 0,
+  symbolStats: 0,
+  bonusPotentialAtt: 0,
+  magnificentSoul: false,
+  weapon: {
+    highLevel: false,
+    primaryLine: 'N/A',
+    secondaryLine: 'N/A',
+    tertiaryLine: 'N/A'
+  },
+  secondary: {
+    highLevel: false,
+    primaryLine: 'N/A',
+    secondaryLine: 'N/A',
+    tertiaryLine: 'N/A'
+  },
+  emblem: {
+    highLevel: false,
+    primaryLine: 'N/A',
+    secondaryLine: 'N/A',
+    tertiaryLine: 'N/A'
+  },
+  hyper: {
+    STR: 0,
+    DEX: 0,
+    LUK: 0,
+    INT: 0,
+    hp: 0,
+    mp: 0,
+    dftfmana: 0,
+    critRate: 0,
+    critDmg: 0,
+    ied: 0,
+    dmg: 0,
+    bossDmg: 0,
+    statusResistance: 0,
+    knockbackResistance: 0,
+    jobAtt: 0,
+    bonuxExp: 0,
+    arcaneForce: 0
+  },
+  legion: {
+    primary: 0,
+    secondary: 0
+  },
+  familiar: {
+    badgeAttPercentSum: 0,
+    badgePrimarySum: 0,
+    badgeAllStatSum: 0,
+    potentialAttPercentSum: 0,
+    potentialPrimarySum: 0,
+    potentialAllStatSum: 0
+  }
+};

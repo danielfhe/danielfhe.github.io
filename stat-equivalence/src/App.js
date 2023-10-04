@@ -7,98 +7,25 @@ import Col from 'react-bootstrap/Col';
 import Row from 'react-bootstrap/Row';
 import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import ClassUtils from './ClassUtils';
 import FormulaUtils from './FormulaUtils';
 
 function App() {
-  const [selectedClass, setSelectedClass] = useState('Adele');
-  const [weapon, setWeapon] = useState('Bladecaster');
-  const [stats, setStats] = useState({
-    level: 0,
-    hp: 0,
-    mp: 0,
-    upperShownDmgRange: 0,
-    STR: {
-      total: 0,
-      ap: 0,
-      percent: 0
-    },
-    DEX: {
-      total: 0,
-      ap: 0,
-      percent: 0
-    },
-    LUK: {
-      total: 0,
-      ap: 0,
-      percent: 0
-    },
-    INT: {
-      total: 0,
-      ap: 0,
-      percent: 0
-    },
-    percentAllStat: 0,
-    percentAP: 0,
-    dmgPercent: 0,
-    finalDmg: 0,
-    ied: 0,
-    critRate: 0,
-    critDmg: 0,
-    bossDmg: 0,
-    symbolStats: 0,
-    bonusPotentialAtt: 0,
-    magnificentSoul: false,
-    weapon: {
-      highLevel: false,
-      primaryLine: 'N/A',
-      secondaryLine: 'N/A',
-      tertiaryLine: 'N/A'
-    },
-    secondary: {
-      highLevel: false,
-      primaryLine: 'N/A',
-      secondaryLine: 'N/A',
-      tertiaryLine: 'N/A'
-    },
-    emblem: {
-      highLevel: false,
-      primaryLine: 'N/A',
-      secondaryLine: 'N/A',
-      tertiaryLine: 'N/A'
-    },
-    hyper: {
-      STR: 0,
-      DEX: 0,
-      LUK: 0,
-      INT: 0,
-      hp: 0,
-      mp: 0,
-      dftfmana: 0,
-      critRate: 0,
-      critDmg: 0,
-      ied: 0,
-      dmg: 0,
-      bossDmg: 0,
-      statusResistance: 0,
-      knockbackResistance: 0,
-      jobAtt: 0,
-      bonuxExp: 0,
-      arcaneForce: 0
-    },
-    legion: {
-      primary: 0,
-      secondary: 0
-    },
-    familiar: {
-      badgeAttPercentSum: 0,
-      badgePrimarySum: 0,
-      badgeAllStatSum: 0,
-      potentialAttPercentSum: 0,
-      potentialPrimarySum: 0,
-      potentialAllStatSum: 0
-    }
+  const [selectedClass, setSelectedClass] = useState(() => {
+    let selected = localStorage.getItem('selectedClass');
+
+    return selected ? JSON.parse(selected) : 'Adele';
+  });
+  const [weapon, setWeapon] = useState(() => {
+    let weapon = localStorage.getItem('weapon');
+    
+    return weapon ? JSON.parse(weapon) : 'Bladecaster';
+  });
+  const [stats, setStats] = useState(() => {
+    let stats = localStorage.getItem('stats');
+    
+    return stats ? JSON.parse(stats) : ClassUtils.getInitialStats();
   });
   const [statEquivalence, setStatEquivalence] = useState({
     attackEquivalence: null,
@@ -106,27 +33,31 @@ function App() {
     percentAllEquivalence: null
   })
   const classInfo = useMemo(() => ClassUtils.getClassInfo(selectedClass), [selectedClass]);
-  
+
+  useEffect(() => {
+    localStorage.setItem('selectedClass', JSON.stringify(selectedClass));
+  }, [selectedClass]);
+  useEffect(() => {
+    localStorage.setItem('weapon', JSON.stringify(weapon));
+  }, [weapon]);
+  useEffect(() => {
+    localStorage.setItem('stats', JSON.stringify(stats));
+  }, [stats]);
+
   const handleSubmit = (event) => {
     event.preventDefault();
     
     const weaponMultiplier = ClassUtils.getWeaponMultiplier(weapon, selectedClass);
     let calculated = {};
 
-    calculated.primaryStats = classInfo.primary
-      .map(statName => stats[statName].total);
-    calculated.secondaryStats = classInfo.secondary
-      .map(statName => stats[statName].total);
-    calculated.primaryStatAPs = classInfo.primary
-      .map(statName => stats[statName].ap);
-    calculated.secondaryStatAPs = classInfo.secondary
-      .map(statName => stats[statName].ap);
+    calculated.primaryStats = classInfo.primary.map(statName => stats[statName].total);
+    calculated.secondaryStats = classInfo.secondary.map(statName => stats[statName].total);
+    // calculated.primaryStatAPs = classInfo.primary.map(statName => stats[statName].ap);
+    // calculated.secondaryStatAPs = classInfo.secondary.map(statName => stats[statName].ap);
     calculated.primaryStatPercents = classInfo.primary.map(statName => stats[statName].percent + stats.percentAllStat);
     calculated.secondaryStatPercents = classInfo.secondary.map(statName => stats[statName].percent + stats.percentAllStat);
-    calculated.hyperPrimaryStats = classInfo.primary
-      .map(statName => stats.hyper[statName]);
-    calculated.hyperSecondaryStats = classInfo.primary
-      .map(statName => stats.hyper[statName]);
+    calculated.hyperPrimaryStats = classInfo.primary.map(statName => stats.hyper[statName]);
+    calculated.hyperSecondaryStats = classInfo.primary.map(statName => stats.hyper[statName]);
 
     calculated.attackPercent = 100.0 + (stats.magnificentSoul ? 3 : 0) + stats.familiar.badgeAttPercentSum + 
       stats.familiar.potentialAttPercentSum + stats.bonusPotentialAtt + classInfo.attPercent + FormulaUtils.getWeaponSecondaryEmblemAttack(stats);
@@ -134,7 +65,6 @@ function App() {
     calculated.statValue = FormulaUtils.getStatValue(selectedClass, calculated.primaryStats, calculated.secondaryStats);
     calculated.totalJobAttack = FormulaUtils.getTotalJobAttack(stats.upperShownDmgRange, weaponMultiplier, calculated.statValue, stats.dmgPercent, stats.finalDmg)
     calculated.attack = Math.floor(calculated.totalJobAttack / (calculated.attackPercent / 100));
-    // calculated.dmgPercent = stats.dmgPercent + classInfo.dmgPercent; // damage percent + class damage percent
 
     calculated.finalStatPrimary = (30 * calculated.hyperPrimaryStats[0]) + stats.symbolStats + stats.legion.primary;
     calculated.finalStatSecondary = (30 * calculated.hyperSecondaryStats[0]) + stats.legion.secondary;
@@ -147,7 +77,6 @@ function App() {
     calculated.secondaryRatio = (calculated.secondaryBaseTotalStat + 1) * (1 + calculated.secondaryStatPercents[0]/ 100.0) + calculated.finalStatSecondary - calculated.secondaryStats[0]
 
     setStatEquivalence({
-      ...statEquivalence,
       attackEquivalence: calculated.attackRatio / calculated.primaryRatio,
       secondaryEquivalence: calculated.secondaryRatio / calculated.primaryRatio,
       percentAllEquivalence: calculated.percentRatio / calculated.primaryRatio
