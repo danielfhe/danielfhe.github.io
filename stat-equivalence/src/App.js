@@ -121,8 +121,6 @@ function App() {
       .map(statName => stats[statName].ap);
     calculated.secondaryStatAPs = classInfo.secondary
       .map(statName => stats[statName].ap);
-    calculated.primaryStatSum = calculated.primaryStats.reduce((a, b) => a + b, 0);
-    calculated.secondaryStatSum = calculated.secondaryStats.reduce((a, b) => a + b, 0);
     calculated.primaryStatPercents = classInfo.primary.map(statName => stats[statName].percent + stats.percentAllStat);
     calculated.secondaryStatPercents = classInfo.secondary.map(statName => stats[statName].percent + stats.percentAllStat);
     calculated.hyperPrimaryStats = classInfo.primary
@@ -133,28 +131,15 @@ function App() {
     calculated.attackPercent = 100.0 + (stats.magnificentSoul ? 3 : 0) + stats.familiar.badgeAttPercentSum + 
       stats.familiar.potentialAttPercentSum + stats.bonusPotentialAtt + classInfo.attPercent + FormulaUtils.getWeaponSecondaryEmblemAttack(stats);
     // 100 + soul + familiar badges + familiar potential + bonus potential att % (non-reboot) + class att % + attack from WSE
-    calculated.statValue = FormulaUtils.getStatValue(selectedClass, calculated.primaryStatSum, calculated.secondaryStatSum);
+    calculated.statValue = FormulaUtils.getStatValue(selectedClass, calculated.primaryStats, calculated.secondaryStats);
     calculated.totalJobAttack = FormulaUtils.getTotalJobAttack(stats.upperShownDmgRange, weaponMultiplier, calculated.statValue, stats.dmgPercent, stats.finalDmg)
     calculated.attack = Math.floor(calculated.totalJobAttack / (calculated.attackPercent / 100));
-    calculated.dmgPercent = stats.dmgPercent + classInfo.dmgPercent; // damage percent + class damage percent
+    // calculated.dmgPercent = stats.dmgPercent + classInfo.dmgPercent; // damage percent + class damage percent
 
     calculated.finalStatPrimary = (30 * calculated.hyperPrimaryStats[0]) + stats.symbolStats + stats.legion.primary;
     calculated.finalStatSecondary = (30 * calculated.hyperSecondaryStats[0]) + stats.legion.secondary;
     calculated.primaryBaseTotalStat = (calculated.primaryStats[0] - calculated.finalStatPrimary) / (1.0 + (calculated.primaryStatPercents[0] / 100.0));
     calculated.secondaryBaseTotalStat = (calculated.secondaryStats[0] - calculated.finalStatSecondary) / (1.0 + (calculated.secondaryStatPercents[0] / 100.0));
-
-    calculated.currentDmg = FormulaUtils.damage(classInfo, calculated.attack, calculated.attackPercent / 100.0, calculated.finalStatPrimary, calculated.primaryBaseTotalStat, 1 + calculated.primaryStatPercents[0] / 100.0, calculated.finalStatSecondary, calculated.secondaryBaseTotalStat, 1 + calculated.secondaryStatPercents[0] / 100.0);
-    calculated.plus1Attack = FormulaUtils.damage(classInfo, calculated.attack + 1, calculated.attackPercent / 100.0, calculated.finalStatPrimary, calculated.primaryBaseTotalStat, 1 + calculated.primaryStatPercents[0] / 100.0, calculated.finalStatSecondary, calculated.secondaryBaseTotalStat, 1 + calculated.secondaryStatPercents[0] / 100.0);
-    calculated.attackDifference = calculated.plus1Attack - calculated.currentDmg;
-
-    calculated.plus1PrimaryStat = FormulaUtils.damage(classInfo, calculated.attack, calculated.attackPercent / 100.0, calculated.finalStatPrimary, calculated.primaryBaseTotalStat + 1, 1 + calculated.primaryStatPercents[0] / 100.0, calculated.finalStatSecondary, calculated.secondaryBaseTotalStat, 1 + calculated.secondaryStatPercents[0] / 100.0);
-    calculated.primaryStatDifference = calculated.plus1PrimaryStat - calculated.currentDmg;
-
-    calculated.plus1SecondaryStat = FormulaUtils.damage(classInfo, calculated.attack, calculated.attackPercent / 100.0, calculated.finalStatPrimary, calculated.primaryBaseTotalStat, 1 + calculated.primaryStatPercents[0] / 100.0, calculated.finalStatSecondary, calculated.secondaryBaseTotalStat + 1, 1 + calculated.secondaryStatPercents[0] / 100.0);
-    calculated.secondaryStatDifference = calculated.plus1SecondaryStat - calculated.currentDmg;
-
-    calculated.plus1PercentAll = FormulaUtils.damage(classInfo, calculated.attack, calculated.attackPercent / 100.0, calculated.finalStatPrimary, calculated.primaryBaseTotalStat, (1 + calculated.primaryStatPercents[0] / 100.0) + 0.01, calculated.finalStatSecondary, calculated.secondaryBaseTotalStat, (1 + calculated.secondaryStatPercents[0] / 100.0) + 0.01);
-    calculated.percentAllDifference = calculated.plus1PercentAll - calculated.currentDmg;
 
     calculated.primaryRatio = (calculated.primaryBaseTotalStat + 1) * (1 + calculated.primaryStatPercents[0]/ 100.0) + calculated.finalStatPrimary - calculated.primaryStats[0]
     calculated.percentRatio = (calculated.primaryBaseTotalStat) * (1 + (calculated.primaryStatPercents[0] + 1)/ 100.0) + calculated.finalStatPrimary - calculated.primaryStats[0]
@@ -186,22 +171,20 @@ function App() {
             <Row><Col><label>1% All Stats:</label> {statEquivalence.percentAllEquivalence.toFixed(2)} primary stat</Col></Row>
             <Row><Col><label>1 Attack:</label> {statEquivalence.attackEquivalence.toFixed(2)} primary stat</Col></Row>
             <Row><Col><label>1 Secondary Stat:</label> {statEquivalence.secondaryEquivalence.toFixed(2)} primary stat</Col></Row>
-            <br/>
+            {/* <br/>
             <Row><Col><label>Primary ratio:</label> {statEquivalence.primaryRatio.toFixed(2)}</Col></Row>
             <Row><Col><label>1% ratio:</label> {statEquivalence.percentRatio.toFixed(2)}</Col></Row>
-            <Row><Col><label>Attack ratio:</label> {statEquivalence.attackRatio.toFixed(2)}</Col></Row>
+            <Row><Col><label>Attack ratio:</label> {statEquivalence.attackRatio.toFixed(2)}</Col></Row> */}
           </Container>
           : null
         }
-        <form onSubmit={handleSubmit}>
+        <Form onSubmit={handleSubmit}>
           <Container>
             <Row><Col><h4><u>Character Info</u></h4></Col></Row>
             <Row>
               <Col><DropdownSelector label={'Class'} optionsList={ClassUtils.getClassNames()} selected={selectedClass} setSelected={setSelectedClass}/></Col>
               <Col><DropdownSelector label={'Main weapon'} optionsList={ClassUtils.getWeaponNames()} selected={weapon} setSelected={setWeapon}/></Col>
               <Col><StatBox label={'Level'} stat={stats.level} type={'number'} setStatValue={s => {setStats({...stats, level: Number(s)})}}/></Col>
-              {/* <Col><StatBox label={'HP'} stat={stats.hp} type={'number'} setStatValue={s => {setStats({...stats, hp: Number(s)})}}/></Col>
-              <Col><StatBox label={'MP'} stat={stats.mp} type={'number'} setStatValue={s => {setStats({...stats, mp: Number(s)})}}/></Col> */}
               <Col><StatBox label={'Upper Damage Range'} stat={stats.upperShownDmgRange} type={'number'} setStatValue={s => {setStats({...stats, upperShownDmgRange: Number(s)})}}/></Col>
             </Row>
             <Row>
@@ -209,6 +192,8 @@ function App() {
               <HideableStatColumn label={'DEX'} stat={stats.DEX.total} type={'number'} setStatValue={s => {setStats({...stats, DEX: {...stats.DEX, total: Number(s)}})}} shouldShow={classInfo.primary.concat(classInfo.secondary).includes('DEX')}/>
               <HideableStatColumn label={'LUK'} stat={stats.LUK.total} type={'number'} setStatValue={s => {setStats({...stats, LUK: {...stats.LUK, total: Number(s)}})}} shouldShow={classInfo.primary.concat(classInfo.secondary).includes('LUK')}/>
               <HideableStatColumn label={'INT'} stat={stats.INT.total} type={'number'} setStatValue={s => {setStats({...stats, INT: {...stats.INT, total: Number(s)}})}} shouldShow={classInfo.primary.concat(classInfo.secondary).includes('INT')}/>
+              <HideableStatColumn label={'HP'} stat={stats.hp} type={'number'} setStatValue={s => {setStats({...stats, hp: Number(s)})}} shouldShow={selectedClass === 'Demon Avenger'}/>
+              <HideableStatColumn label={'MP'} stat={stats.mp} type={'number'} setStatValue={s => {setStats({...stats, mp: Number(s)})}} shouldShow={selectedClass === 'Kanna'}/>
             </Row>
             {/* <Row>
               <HideableStatColumn label={'STR AP'} stat={stats.STR.total} type={'number'} setStatValue={s => {setStats({...stats, STR: {...stats.STR, ap: Number(s)}})}} shouldShow={classInfo.primary.concat(classInfo.secondary).includes('STR')}/>
@@ -302,7 +287,7 @@ function App() {
             <br/>
             <Button variant="primary" type="submit">Submit</Button>
           </Container>
-        </form>
+        </Form>
       </div>
     </>
   );

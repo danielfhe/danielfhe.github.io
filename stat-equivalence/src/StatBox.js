@@ -17,7 +17,7 @@ export default function StatBox({ label, stat, type, setStatValue }) {
 export function HideableStatColumn({ label, stat, type, setStatValue, shouldShow }) {
     return (
         shouldShow && 
-            <Col>
+            <Col md={3}>
                 <StatBox label={label} stat={stat} type={type} setStatValue={setStatValue}/>
             </Col>
     );

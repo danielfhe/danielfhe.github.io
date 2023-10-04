@@ -1,11 +1,13 @@
 export default class FormulaUtils {
-  static getStatValue(className, primaryStat, secondaryStat, level) {
+  static getStatValue(className, primaryStats, secondaryStats, level) {
+    let primaryStatsSum = primaryStats.reduce((a, b) => a + b, 0);
+    let secondaryStatsSum = secondaryStats.reduce((a, b) => a + b, 0);
     if(className === "Demon Avenger") {
       const pureHp = 545.0 + (90 * level); // 4th job and above
-      return Math.floor(pureHp / 3.5) + (0.8 * Math.floor(primaryStat - pureHp) / 3.5) + secondaryStat;
+      return Math.floor(pureHp / 3.5) + (0.8 * Math.floor(primaryStatsSum - pureHp) / 3.5) + secondaryStatsSum;
     }
 
-    return (4 * primaryStat) + secondaryStat;
+    return (4 * primaryStatsSum) + secondaryStatsSum;
   }
 
   static getTotalJobAttack(upperShownDmgRange, weaponMultiplier, statValue, dmgPercent, finalDmgPercent) {
@@ -35,14 +37,6 @@ export default class FormulaUtils {
     let tertiary = equip.tertiaryLine.includes('ATT') ? Number(re.exec(equip.tertiaryLine)) : 0;
 
     return primary + secondary + tertiary;
-  }
-
-  static damage(classInfo, attackWithoutPercent, attackPercentAsMultiplier, finalStatPrimary, baseTotalStatPrimary, primaryPercentAsMultiplier, finalStatSecondary, baseTotalStatSecondary, secondaryPercentAsMultiplier) { //TODO: refactor
-    let primary = baseTotalStatPrimary * primaryPercentAsMultiplier + finalStatPrimary;
-    let secondary = baseTotalStatSecondary * secondaryPercentAsMultiplier + finalStatSecondary;
-    let attack = attackWithoutPercent * attackPercentAsMultiplier;
-
-    return ((4 * primary) + secondary) * attack;
   }
 }
 
