@@ -1,7 +1,7 @@
 import './App.css';
-import HeadingBar from './HeadingBar.js';
-import StatBox, { HideableStatColumn } from './StatBox.js';
-import DropdownSelector, { HyperStatDropdownSelector } from './DropdownSelector.js';
+import HeadingBar from './components/HeadingBar.js';
+import StatBox, { HideableStatColumn } from './components/StatBox.js';
+import DropdownSelector, { HyperStatDropdownSelector } from './components/DropdownSelector.js';
 import Container from 'react-bootstrap/esm/Container';
 import Col from 'react-bootstrap/Col';
 import Row from 'react-bootstrap/Row';
@@ -9,7 +9,7 @@ import Form from 'react-bootstrap/Form';
 import Navbar from 'react-bootstrap/Navbar';
 import Button from 'react-bootstrap/Button';
 import { useEffect, useMemo, useState } from 'react';
-import ClassUtils from './ClassUtils';
+import ClassUtils from './utilities/ClassUtils';
 import FormulaUtils from './FormulaUtils';
 
 const { createWorker } = require('tesseract.js');
