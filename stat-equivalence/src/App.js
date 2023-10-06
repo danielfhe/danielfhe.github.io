@@ -6,10 +6,13 @@ import Container from 'react-bootstrap/esm/Container';
 import Col from 'react-bootstrap/Col';
 import Row from 'react-bootstrap/Row';
 import Form from 'react-bootstrap/Form';
+import Navbar from 'react-bootstrap/Navbar';
 import Button from 'react-bootstrap/Button';
 import { useEffect, useMemo, useState } from 'react';
 import ClassUtils from './ClassUtils';
 import FormulaUtils from './FormulaUtils';
+
+const { createWorker } = require('tesseract.js');
 
 function App() {
   const [selectedClass, setSelectedClass] = useState(() => {
@@ -31,7 +34,9 @@ function App() {
     attackEquivalence: null,
     secondaryEquivalence: null,
     percentAllEquivalence: null
-  })
+  });
+  const [statImage, setStatImage] = useState();
+
   const classInfo = useMemo(() => ClassUtils.getClassInfo(selectedClass), [selectedClass]);
 
   useEffect(() => {
@@ -88,18 +93,38 @@ function App() {
     console.log(`weapon: ${weapon}`);
     console.log(calculated);
     console.log(statEquivalence);
+
+    window.scrollTo(0, 0);
   }
+
+  const handleReset = (_event) => {
+    setStats(ClassUtils.getInitialStats());
+    setStatImage(null);
+  }
+
+  async function handleStatWindowImageChange(e) {
+    console.log(e.target.files);
+    setStatImage(URL.createObjectURL(e.target.files[0]));
+
+    const worker = await createWorker('eng');
+    // await worker.setParameters({
+    //   tessedit_char_whitelist: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789',
+    // });
+    const { data: { text } } = await worker.recognize(statImage);
+    console.log(text);
+    await worker.terminate();
+}
 
   return (
     <>
       <HeadingBar/>
       <div className="App-Body">
         { statEquivalence.attackEquivalence != null ? 
-          <Container>
+          <Container className="rounded bg-light p-3 text-center">
             <Row><Col><h4><u>Stat Equivalence</u></h4></Col></Row>
-            <Row><Col><label>1% All Stats:</label> {statEquivalence.percentAllEquivalence.toFixed(2)} primary stat</Col></Row>
-            <Row><Col><label>1 Attack:</label> {statEquivalence.attackEquivalence.toFixed(2)} primary stat</Col></Row>
-            <Row><Col><label>1 Secondary Stat:</label> {statEquivalence.secondaryEquivalence.toFixed(2)} primary stat</Col></Row>
+            <Row><Col><label>1% All Stat &lt;=&gt;</label> {statEquivalence.percentAllEquivalence.toFixed(2)} primary stat</Col></Row>
+            <Row><Col><label>1 Attack &lt;=&gt;</label> {statEquivalence.attackEquivalence.toFixed(2)} primary stat</Col></Row>
+            <Row><Col><label>1 Secondary Stat &lt;=&gt;</label> {statEquivalence.secondaryEquivalence.toFixed(2)} primary stat</Col></Row>
             {/* <br/>
             <Row><Col><label>Primary ratio:</label> {statEquivalence.primaryRatio.toFixed(2)}</Col></Row>
             <Row><Col><label>1% ratio:</label> {statEquivalence.percentRatio.toFixed(2)}</Col></Row>
@@ -138,8 +163,8 @@ function App() {
               <Col><StatBox label={'All stat% on equips'} stat={stats.percentAllStat} type={'number'} setStatValue={s => {setStats({...stats, percentAllStat: Number(s)})}}/></Col>
             </Row>
             <Row>
-              <Col><StatBox label={'Damage %'} stat={stats.dmgPercent} type={'number'} setStatValue={s => {setStats({...stats, dmgPercent: Number(s)})}}/></Col>
-              <Col><StatBox label={'Final Damage'} stat={stats.finalDmg} type={'number'} setStatValue={s => {setStats({...stats, finalDmg: Number(s)})}}/></Col>
+              <Col md={3}><StatBox label={'Damage %'} stat={stats.dmgPercent} type={'number'} setStatValue={s => {setStats({...stats, dmgPercent: Number(s)})}}/></Col>
+              <Col md={3}><StatBox label={'Final Damage %'} stat={stats.finalDmg} type={'number'} setStatValue={s => {setStats({...stats, finalDmg: Number(s)})}}/></Col>
             </Row>
             <Row>
               <Col><StatBox label={'Main Stat(s) from Arcane/Sacred Symbols'} stat={stats.symbolStats} type={'number'} setStatValue={s => {setStats({...stats, symbolStats: Number(s)})}}/></Col>
@@ -177,7 +202,7 @@ function App() {
             </Row>
             <Row><Col><h4><u>Bonus Potentials</u></h4></Col></Row>
             <Row>
-              <Col><StatBox label={'Total Attack %'} stat={stats.bonusPotentialAtt} type={'number'} setStatValue={s => {setStats({...stats, bonusPotentialAtt: Number(s)})}}/></Col>
+              <Col md={2}><StatBox label={'Total Attack %'} stat={stats.bonusPotentialAtt} type={'number'} setStatValue={s => {setStats({...stats, bonusPotentialAtt: Number(s)})}}/></Col>
             </Row>
             <Row><Col><h4><u>Hyper Stats</u></h4></Col></Row>
             <HyperStatDropdownSelector label={'STR'} optionsList={Array.from({length: 16}, (_v, i) => i)} selected={stats.hyper.STR} setSelected={s => {setStats({...stats, hyper: {...stats.hyper, STR: s}})}}/>
@@ -214,10 +239,22 @@ function App() {
               <Col><StatBox label={'All Stat'} stat={stats.familiar.potentialAllStatSum} type={'number'} setStatValue={s => {setStats({...stats, familiar: {...stats.familiar, potentialAllStatSum: Number(s)}})}}/></Col>
             </Row>
             <br/>
-            <Button variant="primary" type="submit">Submit</Button>
+            <Row className="mb-3">
+              <h4>Add Stat Window Image:</h4>
+              <input type="file" onChange={handleStatWindowImageChange} />
+              <img src={statImage} alt='' />
+            </Row>
           </Container>
         </Form>
       </div>
+      <Navbar fixed="bottom" style={{ backgroundColor: 'gray', position: 'sticky', bottom: 0 }}>
+        <Container>
+          <Row>
+            <Col><Button variant="primary" type="submit" onClick={handleSubmit}>Calculate</Button></Col>
+            <Col><Button variant="danger" type="reset" onClick={handleReset}>Clear</Button></Col>
+          </Row>
+        </Container>
+      </Navbar>
     </>
   );
 }

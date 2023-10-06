@@ -6,7 +6,6 @@ export default function HeadingBar() {
         <Navbar>
             <Container>
                 <Navbar.Brand>Maple Armory</Navbar.Brand>
-                <Navbar.Toggle />
             </Container>
         </Navbar>
     );
