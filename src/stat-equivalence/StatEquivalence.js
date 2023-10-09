@@ -11,6 +11,7 @@ import Button from 'react-bootstrap/Button';
 import { useEffect, useMemo, useState } from 'react';
 import ClassUtils from '../utilities/ClassUtils';
 import FormulaUtils from '../utilities/FormulaUtils';
+import HyperStats from '../components/HyperStats';
 
 const { createWorker } = require('tesseract.js');
 
@@ -204,22 +205,7 @@ function StatEquivalence() {
             <Row>
               <Col md={2}><StatBox label={'Total Attack %'} stat={stats.bonusPotentialAtt} type={'number'} setStatValue={s => {setStats({...stats, bonusPotentialAtt: Number(s)})}}/></Col>
             </Row>
-            <Row><Col><h4><u>Hyper Stats</u></h4></Col></Row>
-            <HyperStatDropdownSelector label={'STR'} optionsList={Array.from({length: 16}, (_v, i) => i)} selected={stats.hyper.STR} setSelected={s => {setStats({...stats, hyper: {...stats.hyper, STR: s}})}}/>
-            <HyperStatDropdownSelector label={'DEX'} optionsList={Array.from({length: 16}, (_v, i) => i)} selected={stats.hyper.DEX} setSelected={s => {setStats({...stats, hyper: {...stats.hyper, DEX: s}})}}/>
-            <HyperStatDropdownSelector label={'LUK'} optionsList={Array.from({length: 16}, (_v, i) => i)} selected={stats.hyper.LUK} setSelected={s => {setStats({...stats, hyper: {...stats.hyper, LUK: s}})}}/>
-            <HyperStatDropdownSelector label={'INT'} optionsList={Array.from({length: 16}, (_v, i) => i)} selected={stats.hyper.INT} setSelected={s => {setStats({...stats, hyper: {...stats.hyper, INT: s}})}}/>
-            <HyperStatDropdownSelector label={'HP'} optionsList={Array.from({length: 16}, (_v, i) => i)} selected={stats.hyper.hp} setSelected={s => {setStats({...stats, hyper: {...stats.hyper, hp: s}})}}/>
-            <HyperStatDropdownSelector label={'MP'} optionsList={Array.from({length: 16}, (_v, i) => i)} selected={stats.hyper.mp} setSelected={s => {setStats({...stats, hyper: {...stats.hyper, mp: s}})}}/>
-            <HyperStatDropdownSelector label={'DF/TF/Mana'} optionsList={Array.from({length: 11}, (_v, i) => i)} selected={stats.hyper.dftfmana} setSelected={s => {setStats({...stats, hyper: {...stats.hyper, dftfmana: s}})}}/>
-            <HyperStatDropdownSelector label={'Critical Rate'} optionsList={Array.from({length: 16}, (_v, i) => i)} selected={stats.hyper.critRate} setSelected={s => {setStats({...stats, hyper: {...stats.hyper, critRate: s}})}}/>
-            <HyperStatDropdownSelector label={'Critical Damage'} optionsList={Array.from({length: 16}, (_v, i) => i)} selected={stats.hyper.critDmg} setSelected={s => {setStats({...stats, hyper: {...stats.hyper, critDmg: s}})}}/>
-            <HyperStatDropdownSelector label={'IED'} optionsList={Array.from({length: 16}, (_v, i) => i)} selected={stats.hyper.ied} setSelected={s => {setStats({...stats, hyper: {...stats.hyper, ied: s}})}}/>
-            <HyperStatDropdownSelector label={'Damage'} optionsList={Array.from({length: 16}, (_v, i) => i)} selected={stats.hyper.dmg} setSelected={s => {setStats({...stats, hyper: {...stats.hyper, dmg: s}})}}/>
-            <HyperStatDropdownSelector label={'Boss Damage'} optionsList={Array.from({length: 16}, (_v, i) => i)} selected={stats.hyper.bossDmg} setSelected={s => {setStats({...stats, hyper: {...stats.hyper, bossDmg: s}})}}/>
-            <HyperStatDropdownSelector label={'Status Resistance'} optionsList={Array.from({length: 16}, (_v, i) => i)} selected={stats.hyper.statusResistance} setSelected={s => {setStats({...stats, hyper: {...stats.hyper, statusResistance: s}})}}/>
-            <HyperStatDropdownSelector label={'Knockback Resistance'} optionsList={Array.from({length: 16}, (_v, i) => i)} selected={stats.hyper.knockbackResistance} setSelected={s => {setStats({...stats, hyper: {...stats.hyper, knockbackResistance: s}})}}/>
-            <HyperStatDropdownSelector label={'Weapon and Magic ATT'} optionsList={Array.from({length: 16}, (_v, i) => i)} selected={stats.hyper.jobAtt} setSelected={s => {setStats({...stats, hyper: {...stats.hyper, jobAtt: s}})}}/>
+            <HyperStats stats={stats} setStats={setStats}/>
             <Row><Col><h4><u>Souls</u></h4></Col></Row>
             <Row>
               <Col><input id="magnificentSoul" type="checkbox" checked={stats.magnificentSoul} onChange={_s => {setStats({...stats, magnificentSoul: !stats.magnificentSoul})}}/> <label for="magnificentSoul">Magnificent (ATT +3%)</label></Col>
