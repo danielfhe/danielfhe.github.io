@@ -1,7 +1,7 @@
-import './App.css';
-import HeadingBar from './components/HeadingBar.js';
-import StatBox, { HideableStatColumn } from './components/StatBox.js';
-import DropdownSelector, { HyperStatDropdownSelector } from './components/DropdownSelector.js';
+import '../App.css';
+import HeadingBar from '../components/HeadingBar.js';
+import StatBox, { HideableStatColumn } from '../components/StatBox.js';
+import DropdownSelector, { HyperStatDropdownSelector } from '../components/DropdownSelector.js';
 import Container from 'react-bootstrap/esm/Container';
 import Col from 'react-bootstrap/Col';
 import Row from 'react-bootstrap/Row';
@@ -9,12 +9,12 @@ import Form from 'react-bootstrap/Form';
 import Navbar from 'react-bootstrap/Navbar';
 import Button from 'react-bootstrap/Button';
 import { useEffect, useMemo, useState } from 'react';
-import ClassUtils from './utilities/ClassUtils';
-import FormulaUtils from './FormulaUtils';
+import ClassUtils from '../utilities/ClassUtils';
+import FormulaUtils from '../utilities/FormulaUtils';
 
 const { createWorker } = require('tesseract.js');
 
-function App() {
+function StatEquivalence() {
   const [selectedClass, setSelectedClass] = useState(() => {
     let selected = localStorage.getItem('selectedClass');
 
@@ -259,4 +259,4 @@ function App() {
   );
 }
 
-export default App;
+export default StatEquivalence;
