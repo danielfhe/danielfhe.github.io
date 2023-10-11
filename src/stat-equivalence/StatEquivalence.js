@@ -1,7 +1,7 @@
 import '../App.css';
 import HeadingBar from '../components/HeadingBar.js';
 import StatBox, { HideableStatColumn } from '../components/StatBox.js';
-import DropdownSelector, { HyperStatDropdownSelector } from '../components/DropdownSelector.js';
+import DropdownSelector from '../components/DropdownSelector.js';
 import Container from 'react-bootstrap/esm/Container';
 import Col from 'react-bootstrap/Col';
 import Row from 'react-bootstrap/Row';
@@ -12,28 +12,35 @@ import { useEffect, useMemo, useState } from 'react';
 import ClassUtils from '../utilities/ClassUtils';
 import FormulaUtils from '../utilities/FormulaUtils';
 import HyperStats from '../components/HyperStats';
+import Nav from 'react-bootstrap/Nav';
+import NavLink from 'react-bootstrap/NavLink';
 
 const { createWorker } = require('tesseract.js');
 
 function StatEquivalence() {
+  const [slot, setSlot] = useState(() => {
+    let current = localStorage.getItem('slot');
+    
+    return current ? JSON.parse(current) : 'character-slot-1';
+  });
   const [selectedClass, setSelectedClass] = useState(() => {
-    let selected = localStorage.getItem('selectedClass');
+    let selected = localStorage.getItem(`${slot}.selectedClass`);
 
     return selected ? JSON.parse(selected) : 'Adele';
   });
   const [weapon, setWeapon] = useState(() => {
-    let weapon = localStorage.getItem('weapon');
+    let weapon = localStorage.getItem(`${slot}.weapon`);
     
     return weapon ? JSON.parse(weapon) : 'Bladecaster';
   });
   const [stats, setStats] = useState(() => {
-    let stats = localStorage.getItem('stats');
+    let stats = localStorage.getItem(`${slot}.stats`);
     
     return stats ? JSON.parse(stats) : ClassUtils.getInitialStats();
   });
   const [statEquivalence, setStatEquivalence] = useState({
     attackEquivalence: null,
-    secondaryEquivalence: null,
+    secondaryEquivalences: null,
     percentAllEquivalence: null
   });
   const [statImage, setStatImage] = useState();
@@ -41,14 +48,21 @@ function StatEquivalence() {
   const classInfo = useMemo(() => ClassUtils.getClassInfo(selectedClass), [selectedClass]);
 
   useEffect(() => {
-    localStorage.setItem('selectedClass', JSON.stringify(selectedClass));
+    localStorage.setItem(`${slot}.selectedClass`, JSON.stringify(selectedClass));
   }, [selectedClass]);
   useEffect(() => {
-    localStorage.setItem('weapon', JSON.stringify(weapon));
+    localStorage.setItem(`${slot}.weapon`, JSON.stringify(weapon));
   }, [weapon]);
   useEffect(() => {
-    localStorage.setItem('stats', JSON.stringify(stats));
+    localStorage.setItem(`${slot}.stats`, JSON.stringify(stats));
   }, [stats]);
+  useEffect(() => {
+    localStorage.setItem('slot', JSON.stringify(slot));
+
+    setSelectedClass(localStorage.getItem(`${slot}.selectedClass`) ? JSON.parse(localStorage.getItem(`${slot}.selectedClass`)) : 'Adele');
+    setWeapon(localStorage.getItem(`${slot}.weapon`) ? JSON.parse(localStorage.getItem(`${slot}.weapon`)) : 'Bladecaster');
+    setStats({...(localStorage.getItem(`${slot}.stats`) ? JSON.parse(localStorage.getItem(`${slot}.stats`)) : ClassUtils.getInitialStats())});
+  }, [slot]);
 
   const handleSubmit = (event) => {
     event.preventDefault();
@@ -62,8 +76,8 @@ function StatEquivalence() {
     // calculated.secondaryStatAPs = classInfo.secondary.map(statName => stats[statName].ap);
     calculated.primaryStatPercents = classInfo.primary.map(statName => stats[statName].percent + stats.percentAllStat);
     calculated.secondaryStatPercents = classInfo.secondary.map(statName => stats[statName].percent + stats.percentAllStat);
-    calculated.hyperPrimaryStats = classInfo.primary.map(statName => stats.hyper[statName]);
-    calculated.hyperSecondaryStats = classInfo.primary.map(statName => stats.hyper[statName]);
+    calculated.hyperStatPrimaries = classInfo.primary.map(statName => stats.hyper[statName]);
+    calculated.hyperStatSecondaries = classInfo.secondary.map(statName => stats.hyper[statName]);
 
     calculated.attackPercent = 100.0 + (stats.magnificentSoul ? 3 : 0) + stats.familiar.badgeAttPercentSum + 
       stats.familiar.potentialAttPercentSum + stats.bonusPotentialAtt + classInfo.attPercent + FormulaUtils.getWeaponSecondaryEmblemAttack(stats);
@@ -72,20 +86,22 @@ function StatEquivalence() {
     calculated.totalJobAttack = FormulaUtils.getTotalJobAttack(stats.upperShownDmgRange, weaponMultiplier, calculated.statValue, stats.dmgPercent, stats.finalDmg)
     calculated.attack = Math.floor(calculated.totalJobAttack / (calculated.attackPercent / 100));
 
-    calculated.finalStatPrimary = (30 * calculated.hyperPrimaryStats[0]) + stats.symbolStats + stats.legion.primary;
-    calculated.finalStatSecondary = (30 * calculated.hyperSecondaryStats[0]) + stats.legion.secondary;
+    calculated.finalStatPrimary = (30 * calculated.hyperStatPrimaries[0]) + stats.symbolStats + stats.legion.primary;
+    calculated.finalStatSecondaries = calculated.hyperStatSecondaries.map(h => (30 * h) + stats.legion.secondary);
     calculated.primaryBaseTotalStat = (calculated.primaryStats[0] - calculated.finalStatPrimary) / (1.0 + (calculated.primaryStatPercents[0] / 100.0));
-    calculated.secondaryBaseTotalStat = (calculated.secondaryStats[0] - calculated.finalStatSecondary) / (1.0 + (calculated.secondaryStatPercents[0] / 100.0));
+    calculated.secondaryBaseTotalStats = calculated.secondaryStats.map((s, i) => (s - calculated.finalStatSecondaries[i]) / (1.0 + (calculated.secondaryStatPercents[i] / 100.0)));
 
     calculated.primaryRatio = (calculated.primaryBaseTotalStat + 1) * (1 + calculated.primaryStatPercents[0]/ 100.0) + calculated.finalStatPrimary - calculated.primaryStats[0]
     calculated.percentRatio = (calculated.primaryBaseTotalStat) * (1 + (calculated.primaryStatPercents[0] + 1)/ 100.0) + calculated.finalStatPrimary - calculated.primaryStats[0]
     calculated.attackRatio = (calculated.primaryStats[0] + calculated.secondaryStats[0] / 4) / calculated.attack
-    calculated.secondaryRatio = (calculated.secondaryBaseTotalStat + 1) * (1 + calculated.secondaryStatPercents[0]/ 100.0) + calculated.finalStatSecondary - calculated.secondaryStats[0]
+    calculated.secondaryRatios = calculated.secondaryBaseTotalStats.map((s, i) => 
+      (s + 1) * (1 + calculated.secondaryStatPercents[i]/ 100.0) + calculated.finalStatSecondaries[i] - calculated.secondaryStats[i]
+    );
 
     setStatEquivalence({
+      percentAllEquivalence: calculated.percentRatio / calculated.primaryRatio,
       attackEquivalence: calculated.attackRatio / calculated.primaryRatio,
-      secondaryEquivalence: calculated.secondaryRatio / calculated.primaryRatio,
-      percentAllEquivalence: calculated.percentRatio / calculated.primaryRatio
+      secondaryEquivalences: calculated.secondaryRatios.map(s => s / calculated.primaryRatio),
     });
 
     console.log('form data');
@@ -99,7 +115,7 @@ function StatEquivalence() {
   }
 
   const handleReset = (_event) => {
-    setStats(ClassUtils.getInitialStats());
+    setStats(ClassUtils.getInitialStats);
     setStatImage(null);
   }
 
@@ -108,9 +124,6 @@ function StatEquivalence() {
     setStatImage(URL.createObjectURL(e.target.files[0]));
 
     const worker = await createWorker('eng');
-    // await worker.setParameters({
-    //   tessedit_char_whitelist: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789',
-    // });
     const { data: { text } } = await worker.recognize(statImage);
     console.log(text);
     await worker.terminate();
@@ -120,12 +133,30 @@ function StatEquivalence() {
     <>
       <HeadingBar/>
       <div className="App-Body">
+        <Navbar>
+          <Container>
+            Slots:
+            <Nav variant="pills" className="me-auto" onSelect={setSlot} defaultActiveKey={slot}>
+              <Nav.Item>
+                <Nav.Link eventKey="character-slot-1">1</Nav.Link>
+              </Nav.Item>
+              <Nav.Item>
+                <Nav.Link eventKey="character-slot-2">2</Nav.Link>
+              </Nav.Item>
+              <Nav.Item>
+                <Nav.Link eventKey="character-slot-3">3</Nav.Link>
+              </Nav.Item>
+            </Nav>
+          </Container>
+        </Navbar>
         { statEquivalence.attackEquivalence != null ? 
           <Container className="rounded bg-light p-3 text-center">
             <Row><Col><h4><u>Stat Equivalence</u></h4></Col></Row>
-            <Row><Col><label>1% All Stat &lt;=&gt;</label> {statEquivalence.percentAllEquivalence.toFixed(2)} primary stat</Col></Row>
-            <Row><Col><label>1 Attack &lt;=&gt;</label> {statEquivalence.attackEquivalence.toFixed(2)} primary stat</Col></Row>
-            <Row><Col><label>1 Secondary Stat &lt;=&gt;</label> {statEquivalence.secondaryEquivalence.toFixed(2)} primary stat</Col></Row>
+            <Row><Col><label>1% All Stat &lt;=&gt;</label> {statEquivalence.percentAllEquivalence.toFixed(2)} Primary Stat</Col></Row>
+            <Row><Col><label>1 Attack &lt;=&gt;</label> {statEquivalence.attackEquivalence.toFixed(2)} Primary Stat</Col></Row>
+            {statEquivalence.secondaryEquivalences.map((sec, i) => 
+              <Row key={i}><Col><label>1 {classInfo.secondary[i]} Stat &lt;=&gt;</label> {sec.toFixed(2)} Primary Stat</Col></Row>
+            )}
             {/* <br/>
             <Row><Col><label>Primary ratio:</label> {statEquivalence.primaryRatio.toFixed(2)}</Col></Row>
             <Row><Col><label>1% ratio:</label> {statEquivalence.percentRatio.toFixed(2)}</Col></Row>
@@ -179,9 +210,6 @@ function StatEquivalence() {
               <Col><b>Emblem</b></Col>
             </Row>
             <Row>
-              {/* <Col><input id="weaponLevel" type="checkbox" checked={stats.weapon.highLevel} onChange={_s => {setStats({...stats, weapon: {highLevel: !stats.weapon.highLevel, primaryLine: 'N/A', secondaryLine: 'N/A', tertiaryLine: 'N/A'}})}}/> <label for="weaponLevel">Lvl 150+</label></Col> */}
-              {/* <Col><input id="secondaryLevel" type="checkbox" checked={stats.secondary.highLevel} onChange={_s => {setStats({...stats, secondary: {highLevel: !stats.secondary.highLevel, primaryLine: 'N/A', secondaryLine: 'N/A', tertiaryLine: 'N/A'}})}}/> <label for="secondaryLevel">Lvl 150+</label></Col>
-              <Col><input id="emblemLevel" type="checkbox" checked={stats.emblem.highLevel} onChange={_s => {setStats({...stats, emblem: {highLevel: !stats.emblem.highLevel, primaryLine: 'N/A', secondaryLine: 'N/A', tertiaryLine: 'N/A'}})}}/> <label for="emblemLevel">Lvl 150+</label></Col> */}
               <Col><Form.Check inline type='checkbox' label='Lvl 150+' checked={stats.weapon.highLevel} onChange={_s => {setStats({...stats, weapon: {highLevel: !stats.weapon.highLevel, primaryLine: 'N/A', secondaryLine: 'N/A', tertiaryLine: 'N/A'}})}}/></Col>
               <Col><Form.Check inline type='checkbox' label='Lvl 150+' checked={stats.secondary.highLevel} onChange={_s => {setStats({...stats, secondary: {highLevel: !stats.secondary.highLevel, primaryLine: 'N/A', secondaryLine: 'N/A', tertiaryLine: 'N/A'}})}}/></Col>
               <Col><Form.Check inline type='checkbox' label='Lvl 150+' checked={stats.emblem.highLevel} onChange={_s => {setStats({...stats, emblem: {highLevel: !stats.secondary.highLevel, primaryLine: 'N/A', secondaryLine: 'N/A', tertiaryLine: 'N/A'}})}}/></Col>
@@ -225,11 +253,11 @@ function StatEquivalence() {
               <Col><StatBox label={'All Stat'} stat={stats.familiar.potentialAllStatSum} type={'number'} setStatValue={s => {setStats({...stats, familiar: {...stats.familiar, potentialAllStatSum: Number(s)}})}}/></Col>
             </Row>
             <br/>
-            <Row className="mb-3">
+            {/* <Row className="mb-3">
               <h4>Add Stat Window Image:</h4>
               <input type="file" onChange={handleStatWindowImageChange} />
               <img src={statImage} alt='' />
-            </Row>
+            </Row> */}
           </Container>
         </Form>
       </div>

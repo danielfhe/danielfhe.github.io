@@ -21,10 +21,3 @@
   padding: 20px;
   border-radius: 10px;
 }
-
-.nav-item > a.active {
-  background-color: lightgray;    
-}
-.nav-item > a:hover {
-  background-color: lightslategray;
-}

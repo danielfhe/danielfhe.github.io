@@ -8,7 +8,7 @@ export default function HeadingBar() {
     <Navbar>
       <Container>
         <Navbar.Brand>Maple Armory</Navbar.Brand>
-        <Nav className="me-auto">
+        <Nav variant="underline" className="me-auto">
           <Nav.Item>
             <Nav.Link as={NavLink} to="/">Home</Nav.Link>
           </Nav.Item>
