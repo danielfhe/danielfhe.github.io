@@ -244,12 +244,12 @@ function StatEquivalence() {
               <Col><StatBox label={'Attack %'} stat={stats.familiars.potentialAttPercentSum} type={'number'} setStatValue={s => {setStats({...stats, familiars: {...stats.familiars, potentialAttPercentSum: Number(s)}})}}/></Col>
             </Row>
             <Row>
-              <Col></Col>
-              <Col><StatBox label={'Primary Stat %'} stat={stats.familiars.potentialPrimaryPercentSum} type={'number'} setStatValue={s => {setStats({...stats, familiars: {...stats.familiars, potentialPrimaryPercentSum: Number(s)}})}}/></Col>
-            </Row>
-            <Row>
               <Col><StatBox label={'All Stat %'} stat={stats.familiars.badgeAllStatPercentSum} type={'number'} setStatValue={s => {setStats({...stats, familiars: {...stats.familiars, badgeAllStatPercentSum: Number(s)}})}}/></Col>
               <Col><StatBox label={'All Stat %'} stat={stats.familiars.potentialAllStatPercentSum} type={'number'} setStatValue={s => {setStats({...stats, familiars: {...stats.familiars, potentialAllStatPercentSum: Number(s)}})}}/></Col>
+            </Row>
+            <Row>
+              <Col></Col>
+              <Col><StatBox label={'Primary Stat %'} stat={stats.familiars.potentialPrimaryPercentSum} type={'number'} setStatValue={s => {setStats({...stats, familiars: {...stats.familiars, potentialPrimaryPercentSum: Number(s)}})}}/></Col>
             </Row>
             <br/>
             {/* <Row className="mb-3">
