@@ -442,12 +442,11 @@ let initialStats = {
     primary: 0,
     secondary: 0
   },
-  familiar: {
+  familiars: {
     badgeAttPercentSum: 0,
-    badgePrimarySum: 0,
-    badgeAllStatSum: 0,
+    badgeAllStatPercentSum: 0,
     potentialAttPercentSum: 0,
-    potentialPrimarySum: 0,
-    potentialAllStatSum: 0
+    potentialPrimaryPercentSum: 0,
+    potentialAllStatPercentSum: 0
   }
 };

@@ -13,7 +13,6 @@ import ClassUtils from '../utilities/ClassUtils';
 import FormulaUtils from '../utilities/FormulaUtils';
 import HyperStats from '../components/HyperStats';
 import Nav from 'react-bootstrap/Nav';
-import NavLink from 'react-bootstrap/NavLink';
 
 const { createWorker } = require('tesseract.js');
 
@@ -79,8 +78,8 @@ function StatEquivalence() {
     calculated.hyperStatPrimaries = classInfo.primary.map(statName => stats.hyper[statName]);
     calculated.hyperStatSecondaries = classInfo.secondary.map(statName => stats.hyper[statName]);
 
-    calculated.attackPercent = 100.0 + (stats.magnificentSoul ? 3 : 0) + stats.familiar.badgeAttPercentSum + 
-      stats.familiar.potentialAttPercentSum + stats.bonusPotentialAtt + classInfo.attPercent + FormulaUtils.getWeaponSecondaryEmblemAttack(stats);
+    calculated.attackPercent = 100.0 + (stats.magnificentSoul ? 3 : 0) + stats.familiars.badgeAttPercentSum + 
+      stats.familiars.potentialAttPercentSum + stats.bonusPotentialAtt + classInfo.attPercent + FormulaUtils.getWeaponSecondaryEmblemAttack(stats);
     // 100 + soul + familiar badges + familiar potential + bonus potential att % (non-reboot) + class att % + attack from WSE
     calculated.statValue = FormulaUtils.getStatValue(selectedClass, calculated.primaryStats, calculated.secondaryStats);
     calculated.totalJobAttack = FormulaUtils.getTotalJobAttack(stats.upperShownDmgRange, weaponMultiplier, calculated.statValue, stats.dmgPercent, stats.finalDmg)
@@ -154,13 +153,13 @@ function StatEquivalence() {
             <Row><Col><h4><u>Stat Equivalence</u></h4></Col></Row>
             <Row><Col><label>1% All Stat &lt;=&gt;</label> {statEquivalence.percentAllEquivalence.toFixed(2)} Primary Stat</Col></Row>
             <Row><Col><label>1 Attack &lt;=&gt;</label> {statEquivalence.attackEquivalence.toFixed(2)} Primary Stat</Col></Row>
-            {statEquivalence.secondaryEquivalences.map((sec, i) => 
-              <Row key={i}><Col><label>{sec.toFixed(2)} {classInfo.secondary[i]} Stat &lt;=&gt;</label> 1 Primary Stat</Col></Row>
-            )}
-            {/* <br/>
-            <Row><Col><label>Primary ratio:</label> {statEquivalence.primaryRatio.toFixed(2)}</Col></Row>
-            <Row><Col><label>1% ratio:</label> {statEquivalence.percentRatio.toFixed(2)}</Col></Row>
-            <Row><Col><label>Attack ratio:</label> {statEquivalence.attackRatio.toFixed(2)}</Col></Row> */}
+            {
+              classInfo.primary.map(pri =>
+                statEquivalence.secondaryEquivalences.map((sec, i) => 
+                  <Row key={`${pri}-${sec}`}><Col><label>{sec.toFixed(2)} {classInfo.secondary[i]} &lt;=&gt;</label> 1 {pri}</Col></Row>
+                )
+              )
+            }
           </Container>
           : null
         }
@@ -234,23 +233,23 @@ function StatEquivalence() {
               <Col md={2}><StatBox label={'Total Attack %'} stat={stats.bonusPotentialAtt} type={'number'} setStatValue={s => {setStats({...stats, bonusPotentialAtt: Number(s)})}}/></Col>
             </Row>
             <HyperStats stats={stats} setStats={setStats}/>
-            <Row><Col><h4><u>Souls</u></h4></Col></Row>
+            <Row><Col><h4><u>Soul Weapon</u></h4></Col></Row>
             <Row>
               <Col><input id="magnificentSoul" type="checkbox" checked={stats.magnificentSoul} onChange={_s => {setStats({...stats, magnificentSoul: !stats.magnificentSoul})}}/> <label for="magnificentSoul">Magnificent (ATT +3%)</label></Col>
             </Row>
             <Row><Col><h4><u>Familiars</u></h4></Col></Row>
             <Row><Col><h5>Badge Effect</h5></Col><Col><h5>Potentials</h5></Col></Row>
             <Row>
-              <Col><StatBox label={'Total Attack %'} stat={stats.familiar.badgeAttPercentSum} type={'number'} setStatValue={s => {setStats({...stats, familiar: {...stats.familiar, badgeAttPercentSum: Number(s)}})}}/></Col>
-              <Col><StatBox label={'Total Attack %'} stat={stats.familiar.potentialAttPercentSum} type={'number'} setStatValue={s => {setStats({...stats, familiar: {...stats.familiar, potentialAttPercentSum: Number(s)}})}}/></Col>
+              <Col><StatBox label={'Attack %'} stat={stats.familiars.badgeAttPercentSum} type={'number'} setStatValue={s => {setStats({...stats, familiars: {...stats.familiars, badgeAttPercentSum: Number(s)}})}}/></Col>
+              <Col><StatBox label={'Attack %'} stat={stats.familiars.potentialAttPercentSum} type={'number'} setStatValue={s => {setStats({...stats, familiars: {...stats.familiars, potentialAttPercentSum: Number(s)}})}}/></Col>
             </Row>
             <Row>
-              <Col><StatBox label={'Primary Stat'} stat={stats.familiar.badgePrimarySum} type={'number'} setStatValue={s => {setStats({...stats, familiar: {...stats.familiar, badgePrimarySum: Number(s)}})}}/></Col>
-              <Col><StatBox label={'Primary Stat'} stat={stats.familiar.potentialPrimarySum} type={'number'} setStatValue={s => {setStats({...stats, familiar: {...stats.familiar, potentialPrimarySum: Number(s)}})}}/></Col>
+              <Col></Col>
+              <Col><StatBox label={'Primary Stat %'} stat={stats.familiars.potentialPrimaryPercentSum} type={'number'} setStatValue={s => {setStats({...stats, familiars: {...stats.familiars, potentialPrimaryPercentSum: Number(s)}})}}/></Col>
             </Row>
             <Row>
-              <Col><StatBox label={'All Stat'} stat={stats.familiar.badgeAllStatSum} type={'number'} setStatValue={s => {setStats({...stats, familiar: {...stats.familiar, badgeAllStatSum: Number(s)}})}}/></Col>
-              <Col><StatBox label={'All Stat'} stat={stats.familiar.potentialAllStatSum} type={'number'} setStatValue={s => {setStats({...stats, familiar: {...stats.familiar, potentialAllStatSum: Number(s)}})}}/></Col>
+              <Col><StatBox label={'All Stat %'} stat={stats.familiars.badgeAllStatPercentSum} type={'number'} setStatValue={s => {setStats({...stats, familiars: {...stats.familiars, badgeAllStatPercentSum: Number(s)}})}}/></Col>
+              <Col><StatBox label={'All Stat %'} stat={stats.familiars.potentialAllStatPercentSum} type={'number'} setStatValue={s => {setStats({...stats, familiars: {...stats.familiars, potentialAllStatPercentSum: Number(s)}})}}/></Col>
             </Row>
             <br/>
             {/* <Row className="mb-3">
