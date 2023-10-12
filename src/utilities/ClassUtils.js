@@ -398,7 +398,12 @@ let initialStats = {
   critRate: 0,
   critDmg: 0,
   bossDmg: 0,
-  symbolStats: 0,
+  symbols: {
+    STR: 0,
+    DEX: 0,
+    LUK: 0,
+    INT: 0
+  },
   bonusPotentialAtt: 0,
   magnificentSoul: false,
   weapon: {
@@ -439,8 +444,10 @@ let initialStats = {
     arcaneForce: 0
   },
   legion: {
-    primary: 0,
-    secondary: 0
+    STR: 0,
+    DEX: 0,
+    LUK: 0,
+    INT: 0
   },
   familiars: {
     badgeAttPercentSum: 0,

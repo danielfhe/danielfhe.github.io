@@ -77,6 +77,9 @@ function StatEquivalence() {
     calculated.secondaryStatPercents = classInfo.secondary.map(statName => stats[statName].percent + stats.percentAllStat);
     calculated.hyperStatPrimaries = classInfo.primary.map(statName => stats.hyper[statName]);
     calculated.hyperStatSecondaries = classInfo.secondary.map(statName => stats.hyper[statName]);
+    calculated.symbolPrimaries = classInfo.primary.map(statName => stats.symbols[statName]);
+    calculated.legionPrimaries = classInfo.primary.map(statName => stats.legion[statName]);
+    calculated.legionSecondaries = classInfo.secondary.map(statName => stats.legion[statName]);
 
     calculated.attackPercent = 100.0 + (stats.magnificentSoul ? 3 : 0) + stats.familiars.badgeAttPercentSum + 
       stats.familiars.potentialAttPercentSum + stats.bonusPotentialAtt + classInfo.attPercent + FormulaUtils.getWeaponSecondaryEmblemAttack(stats);
@@ -85,8 +88,8 @@ function StatEquivalence() {
     calculated.totalJobAttack = FormulaUtils.getTotalJobAttack(stats.upperShownDmgRange, weaponMultiplier, calculated.statValue, stats.dmgPercent, stats.finalDmg)
     calculated.attack = Math.floor(calculated.totalJobAttack / (calculated.attackPercent / 100));
 
-    calculated.finalStatPrimary = (30 * calculated.hyperStatPrimaries[0]) + stats.symbolStats + stats.legion.primary;
-    calculated.finalStatSecondaries = calculated.hyperStatSecondaries.map(h => (30 * h) + stats.legion.secondary);
+    calculated.finalStatPrimary = (30 * calculated.hyperStatPrimaries[0]) + calculated.symbolPrimaries[0] + calculated.legionPrimaries[0];
+    calculated.finalStatSecondaries = calculated.hyperStatSecondaries.map((h, i) => (30 * h) + calculated.legionSecondaries[i]);
     calculated.primaryBaseTotalStat = (calculated.primaryStats[0] - calculated.finalStatPrimary) / (1.0 + (calculated.primaryStatPercents[0] / 100.0));
     calculated.secondaryBaseTotalStats = calculated.secondaryStats.map((s, i) => (s - calculated.finalStatSecondaries[i]) / (1.0 + (calculated.secondaryStatPercents[i] / 100.0)));
 
@@ -154,8 +157,8 @@ function StatEquivalence() {
             {
               classInfo.primary.map(pri =>
                 <>
-                <Row><Col><label>1% All Stat &lt;=&gt;</label> {statEquivalence.percentAllEquivalence.toFixed(2)} {pri}</Col></Row>
-                <Row><Col><label>1 Attack &lt;=&gt;</label> {statEquivalence.attackEquivalence.toFixed(2)} {pri}</Col></Row>
+                <Row key={`${pri}-all-stat`}><Col><label>1% All Stat &lt;=&gt;</label> {statEquivalence.percentAllEquivalence.toFixed(2)} {pri}</Col></Row>
+                <Row key={`${pri}-attack`}><Col><label>1 Attack &lt;=&gt;</label> {statEquivalence.attackEquivalence.toFixed(2)} {pri}</Col></Row>
                 {statEquivalence.secondaryEquivalences.map((sec, i) => 
                   <Row key={`${pri}-${sec}`}><Col><label>{sec.toFixed(2)} {classInfo.secondary[i]} &lt;=&gt;</label> 1 {pri}</Col></Row>
                 )}
@@ -200,9 +203,17 @@ function StatEquivalence() {
               <Col md={3}><StatBox label={'Final Damage %'} stat={stats.finalDmg} type={'number'} setStatValue={s => {setStats({...stats, finalDmg: Number(s)})}}/></Col>
             </Row>
             <Row>
-              <Col><StatBox label={'Main Stat(s) from Arcane/Sacred Symbols'} stat={stats.symbolStats} type={'number'} setStatValue={s => {setStats({...stats, symbolStats: Number(s)})}}/></Col>
-              <Col><StatBox label={'Main Stat(s) from Legion member bonuses'} stat={stats.legion.primary} type={'number'} setStatValue={s => {setStats({...stats, legion: {...stats.legion, primary: Number(s)}})}}/></Col>
-              <Col><StatBox label={'Secondary Stat(s) from Legion member bonuses'} stat={stats.legion.secondary} type={'number'} setStatValue={s => {setStats({...stats, legion: {...stats.legion, secondary: Number(s)}})}}/></Col>
+              <HideableStatColumn label={'STR from Arcane/Sacred symbols'} stat={stats.symbols.STR} type={'number'} setStatValue={s => {setStats({...stats, symbols: {...stats.symbols, STR: Number(s)}})}} shouldShow={classInfo.primary.includes('STR')}/>
+              <HideableStatColumn label={'DEX from Arcane/Sacred symbols'} stat={stats.symbols.DEX} type={'number'} setStatValue={s => {setStats({...stats, symbols: {...stats.symbols, DEX: Number(s)}})}} shouldShow={classInfo.primary.includes('DEX')}/>
+              <HideableStatColumn label={'LUK from Arcane/Sacred symbols'} stat={stats.symbols.LUK} type={'number'} setStatValue={s => {setStats({...stats, symbols: {...stats.symbols, LUK: Number(s)}})}} shouldShow={classInfo.primary.includes('LUK')}/>
+              <HideableStatColumn label={'INT from Arcane/Sacred symbols'} stat={stats.symbols.INT} type={'number'} setStatValue={s => {setStats({...stats, symbols: {...stats.symbols, INT: Number(s)}})}} shouldShow={classInfo.primary.includes('INT')}/>
+            </Row>
+            <Row><Col><h4><u>Legion</u></h4></Col></Row>
+            <Row>
+              <HideableStatColumn label={'STR from member bonus'} stat={stats.legion.STR} type={'number'} setStatValue={s => {setStats({...stats, legion: {...stats.legion, STR: Number(s)}})}} shouldShow={classInfo.primary.concat(classInfo.secondary).includes('STR')}/>
+              <HideableStatColumn label={'DEX from member bonus'} stat={stats.legion.DEX} type={'number'} setStatValue={s => {setStats({...stats, legion: {...stats.legion, DEX: Number(s)}})}} shouldShow={classInfo.primary.concat(classInfo.secondary).includes('DEX')}/>
+              <HideableStatColumn label={'LUK from member bonus'} stat={stats.legion.LUK} type={'number'} setStatValue={s => {setStats({...stats, legion: {...stats.legion, LUK: Number(s)}})}} shouldShow={classInfo.primary.concat(classInfo.secondary).includes('LUK')}/>
+              <HideableStatColumn label={'INT from member bonus'} stat={stats.legion.INT} type={'number'} setStatValue={s => {setStats({...stats, legion: {...stats.legion, INT: Number(s)}})}} shouldShow={classInfo.primary.concat(classInfo.secondary).includes('INT')}/>
             </Row>
             <Row><Col><h4><u>Equipment</u></h4></Col></Row>
             <Row>
