@@ -93,7 +93,7 @@ function StatEquivalence() {
 
     calculated.primaryRatio = (calculated.primaryBaseTotalStat + 1) * (1 + calculated.primaryStatPercents[0]/ 100.0) + calculated.finalStatPrimary - calculated.primaryStats[0]
     calculated.percentRatio = (calculated.primaryBaseTotalStat) * (1 + (calculated.primaryStatPercents[0] + 1)/ 100.0) + calculated.finalStatPrimary - calculated.primaryStats[0]
-    calculated.attackRatio = (calculated.primaryStats[0] + calculated.secondaryStats[0] / 4) / calculated.attack
+    calculated.attackRatio = (calculated.primaryStats[0] + calculated.secondaryStats[0] / 4.0) / calculated.attack
     calculated.secondaryRatios = calculated.secondaryBaseTotalStats.map((s, i) => 
       (s + 1) * (1 + calculated.secondaryStatPercents[i]/ 100.0) + calculated.finalStatSecondaries[i] - calculated.secondaryStats[i]
     );
@@ -101,7 +101,7 @@ function StatEquivalence() {
     setStatEquivalence({
       percentAllEquivalence: calculated.percentRatio / calculated.primaryRatio,
       attackEquivalence: calculated.attackRatio / calculated.primaryRatio,
-      secondaryEquivalences: calculated.secondaryRatios.map(s => s / calculated.primaryRatio),
+      secondaryEquivalences: calculated.secondaryRatios.map(s => calculated.primaryRatio / (s / 4.0)),
     });
 
     console.log('form data');
@@ -155,7 +155,7 @@ function StatEquivalence() {
             <Row><Col><label>1% All Stat &lt;=&gt;</label> {statEquivalence.percentAllEquivalence.toFixed(2)} Primary Stat</Col></Row>
             <Row><Col><label>1 Attack &lt;=&gt;</label> {statEquivalence.attackEquivalence.toFixed(2)} Primary Stat</Col></Row>
             {statEquivalence.secondaryEquivalences.map((sec, i) => 
-              <Row key={i}><Col><label>1 {classInfo.secondary[i]} Stat &lt;=&gt;</label> {sec.toFixed(2)} Primary Stat</Col></Row>
+              <Row key={i}><Col><label>{sec.toFixed(2)} {classInfo.secondary[i]} Stat &lt;=&gt;</label> 1 Primary Stat</Col></Row>
             )}
             {/* <br/>
             <Row><Col><label>Primary ratio:</label> {statEquivalence.primaryRatio.toFixed(2)}</Col></Row>
