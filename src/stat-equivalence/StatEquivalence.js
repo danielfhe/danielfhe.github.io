@@ -92,7 +92,7 @@ function StatEquivalence() {
 
     calculated.primaryRatio = (calculated.primaryBaseTotalStat + 1) * (1 + calculated.primaryStatPercents[0]/ 100.0) + calculated.finalStatPrimary - calculated.primaryStats[0]
     calculated.percentRatio = (calculated.primaryBaseTotalStat) * (1 + (calculated.primaryStatPercents[0] + 1)/ 100.0) + calculated.finalStatPrimary - calculated.primaryStats[0]
-    calculated.attackRatio = (calculated.primaryStats[0] + calculated.secondaryStats[0] / 4.0) / calculated.attack
+    calculated.attackRatio = (calculated.primaryStats[0] + calculated.secondaryStats.reduce((a, b) => a + b, 0) / 4.0) / calculated.attack
     calculated.secondaryRatios = calculated.secondaryBaseTotalStats.map((s, i) => 
       (s + 1) * (1 + calculated.secondaryStatPercents[i]/ 100.0) + calculated.finalStatSecondaries[i] - calculated.secondaryStats[i]
     );
@@ -151,13 +151,15 @@ function StatEquivalence() {
         { statEquivalence.attackEquivalence != null ? 
           <Container className="rounded bg-light p-3 text-center">
             <Row><Col><h4><u>Stat Equivalence</u></h4></Col></Row>
-            <Row><Col><label>1% All Stat &lt;=&gt;</label> {statEquivalence.percentAllEquivalence.toFixed(2)} Primary Stat</Col></Row>
-            <Row><Col><label>1 Attack &lt;=&gt;</label> {statEquivalence.attackEquivalence.toFixed(2)} Primary Stat</Col></Row>
             {
               classInfo.primary.map(pri =>
-                statEquivalence.secondaryEquivalences.map((sec, i) => 
+                <>
+                <Row><Col><label>1% All Stat &lt;=&gt;</label> {statEquivalence.percentAllEquivalence.toFixed(2)} {pri}</Col></Row>
+                <Row><Col><label>1 Attack &lt;=&gt;</label> {statEquivalence.attackEquivalence.toFixed(2)} {pri}</Col></Row>
+                {statEquivalence.secondaryEquivalences.map((sec, i) => 
                   <Row key={`${pri}-${sec}`}><Col><label>{sec.toFixed(2)} {classInfo.secondary[i]} &lt;=&gt;</label> 1 {pri}</Col></Row>
-                )
+                )}
+                </>
               )
             }
           </Container>
