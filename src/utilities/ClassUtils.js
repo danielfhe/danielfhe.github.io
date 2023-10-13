@@ -25,7 +25,7 @@ export default class ClassUtils {
     return multiplier;
   }
 
-  static getInitialStats() {
+  static initializeStats() {
     return initialStats;
   }
 }
@@ -314,7 +314,7 @@ let classes = {
     dmgPercent: 35
   },
   'Xenon': {
-    primary: ['DEX', 'STR', 'LUK'],
+    primary: ['STR', 'DEX', 'LUK'],
     secondary: [],
     attPercent: 4,
     dmgPercent: 20

@@ -35,12 +35,12 @@ function StatEquivalence() {
   const [stats, setStats] = useState(() => {
     let stats = localStorage.getItem(`${slot}.stats`);
     
-    return stats ? JSON.parse(stats) : ClassUtils.getInitialStats();
+    return stats ? JSON.parse(stats) : ClassUtils.initializeStats();
   });
   const [statEquivalence, setStatEquivalence] = useState({
-    attackEquivalence: null,
+    attackEquivalences: null,
     secondaryEquivalences: null,
-    percentAllEquivalence: null
+    percentAllEquivalences: null
   });
   const [statImage, setStatImage] = useState();
 
@@ -60,7 +60,8 @@ function StatEquivalence() {
 
     setSelectedClass(localStorage.getItem(`${slot}.selectedClass`) ? JSON.parse(localStorage.getItem(`${slot}.selectedClass`)) : 'Adele');
     setWeapon(localStorage.getItem(`${slot}.weapon`) ? JSON.parse(localStorage.getItem(`${slot}.weapon`)) : 'Bladecaster');
-    setStats({...(localStorage.getItem(`${slot}.stats`) ? JSON.parse(localStorage.getItem(`${slot}.stats`)) : ClassUtils.getInitialStats())});
+    setStats({...(localStorage.getItem(`${slot}.stats`) ? JSON.parse(localStorage.getItem(`${slot}.stats`)) : ClassUtils.initializeStats())});
+    setStatEquivalence(ClassUtils.initializeStats);
   }, [slot]);
 
   const handleSubmit = (event) => {
@@ -88,22 +89,26 @@ function StatEquivalence() {
     calculated.totalJobAttack = FormulaUtils.getTotalJobAttack(stats.upperShownDmgRange, weaponMultiplier, calculated.statValue, stats.dmgPercent, stats.finalDmg)
     calculated.attack = Math.floor(calculated.totalJobAttack / (calculated.attackPercent / 100));
 
-    calculated.finalStatPrimary = (30 * calculated.hyperStatPrimaries[0]) + calculated.symbolPrimaries[0] + calculated.legionPrimaries[0];
+    calculated.finalStatPrimaries = calculated.hyperStatPrimaries.map((h, i) => (30 * h) + calculated.symbolPrimaries[i] + calculated.legionPrimaries[i]);//(30 * calculated.hyperStatPrimaries[0]) + calculated.symbolPrimaries[0] + calculated.legionPrimaries[0];
     calculated.finalStatSecondaries = calculated.hyperStatSecondaries.map((h, i) => (30 * h) + calculated.legionSecondaries[i]);
-    calculated.primaryBaseTotalStat = (calculated.primaryStats[0] - calculated.finalStatPrimary) / (1.0 + (calculated.primaryStatPercents[0] / 100.0));
+    calculated.primaryBaseTotalStats = calculated.primaryStats.map((s, i) => (s - calculated.finalStatPrimaries[i]) / (1.0 + (calculated.primaryStatPercents[i] / 100.0)));
     calculated.secondaryBaseTotalStats = calculated.secondaryStats.map((s, i) => (s - calculated.finalStatSecondaries[i]) / (1.0 + (calculated.secondaryStatPercents[i] / 100.0)));
 
-    calculated.primaryRatio = (calculated.primaryBaseTotalStat + 1) * (1 + calculated.primaryStatPercents[0]/ 100.0) + calculated.finalStatPrimary - calculated.primaryStats[0]
-    calculated.percentRatio = (calculated.primaryBaseTotalStat) * (1 + (calculated.primaryStatPercents[0] + 1)/ 100.0) + calculated.finalStatPrimary - calculated.primaryStats[0]
-    calculated.attackRatio = (calculated.primaryStats[0] + calculated.secondaryStats.reduce((a, b) => a + b, 0) / 4.0) / calculated.attack
+    calculated.primaryRatios = calculated.primaryBaseTotalStats.map((s, i) =>
+      (s + 1) * (1 + calculated.primaryStatPercents[i]/ 100.0) + calculated.finalStatPrimaries[i] - calculated.primaryStats[i]
+    );
+    calculated.percentRatios = calculated.primaryBaseTotalStats.map((s, i) => 
+      s * (1 + (calculated.primaryStatPercents[i] + 1)/ 100.0) + calculated.finalStatPrimaries[i] - calculated.primaryStats[i]
+    );
+    calculated.attackRatio = (calculated.primaryStats.reduce((a, b) => a + b, 0) + calculated.secondaryStats.reduce((a, b) => a + b, 0) / 4.0) / calculated.attack;
     calculated.secondaryRatios = calculated.secondaryBaseTotalStats.map((s, i) => 
       (s + 1) * (1 + calculated.secondaryStatPercents[i]/ 100.0) + calculated.finalStatSecondaries[i] - calculated.secondaryStats[i]
     );
 
     setStatEquivalence({
-      percentAllEquivalence: calculated.percentRatio / calculated.primaryRatio,
-      attackEquivalence: calculated.attackRatio / calculated.primaryRatio,
-      secondaryEquivalences: calculated.secondaryRatios.map(s => calculated.primaryRatio / (s / 4.0)),
+      percentAllEquivalences: calculated.percentRatios.map((p, i) => p / calculated.primaryRatios[i]),//calculated.percentRatios[0] / calculated.primaryRatios[0],
+      attackEquivalences: calculated.attackRatio / calculated.primaryRatios.reduce((a, b) => a + b, 0),// calculated.primaryRatios.map(r => calculated.attackRatio / r),
+      secondaryEquivalences: calculated.secondaryRatios.map(s => calculated.primaryRatios[0] / (s / 4.0)), // TODO: fix
     });
 
     console.log('form data');
@@ -117,7 +122,7 @@ function StatEquivalence() {
   }
 
   const handleReset = (_event) => {
-    setStats(ClassUtils.getInitialStats);
+    setStats(ClassUtils.initializeStats);
     setStatImage(null);
   }
 
@@ -151,16 +156,19 @@ function StatEquivalence() {
             </Nav>
           </Container>
         </Navbar>
-        { statEquivalence.attackEquivalence != null ? 
+        { statEquivalence.attackEquivalences != null ? 
           <Container className="rounded bg-light p-3 text-center">
             <Row><Col><h4><u>Stat Equivalence</u></h4></Col></Row>
+            <Row><Col><label>1 Attack &lt;=&gt;</label> {(classInfo.primary.length * statEquivalence.attackEquivalences).toFixed(2)} Primary Stat</Col></Row>
+            {selectedClass === 'Xenon' && (
+              <Row><Col><label>1% All Stat &lt;=&gt;</label> {statEquivalence.percentAllEquivalences.reduce((a, b) => a + b, 0).toFixed(2)} Primary Stat</Col></Row>
+            )}
             {
-              classInfo.primary.map(pri =>
+              classInfo.primary.map((pri, i) =>
                 <>
-                <Row key={`${pri}-all-stat`}><Col><label>1% All Stat &lt;=&gt;</label> {statEquivalence.percentAllEquivalence.toFixed(2)} {pri}</Col></Row>
-                <Row key={`${pri}-attack`}><Col><label>1 Attack &lt;=&gt;</label> {statEquivalence.attackEquivalence.toFixed(2)} {pri}</Col></Row>
-                {statEquivalence.secondaryEquivalences.map((sec, i) => 
-                  <Row key={`${pri}-${sec}`}><Col><label>{sec.toFixed(2)} {classInfo.secondary[i]} &lt;=&gt;</label> 1 {pri}</Col></Row>
+                <Row key={`${pri}-all-stat`}><Col><label>1% All Stat &lt;=&gt;</label> {statEquivalence.percentAllEquivalences[i].toFixed(2)} {pri}</Col></Row>
+                {statEquivalence.secondaryEquivalences.map((sec, j) => 
+                  <Row key={`${pri}-${sec}`}><Col><label>{sec.toFixed(2)} {classInfo.secondary[j]} &lt;=&gt;</label> 1 {pri}</Col></Row>
                 )}
                 </>
               )
