@@ -37,32 +37,27 @@ function StatEquivalence() {
     
     return stats ? JSON.parse(stats) : ClassUtils.initializeStats();
   });
-  const [statEquivalence, setStatEquivalence] = useState({
-    attackEquivalences: null,
-    secondaryEquivalences: null,
-    percentAllEquivalences: null
-  });
+  const [statEquivalence, setStatEquivalence] = useState(ClassUtils.initializeStatEquivalence);
   const [statImage, setStatImage] = useState();
 
   const classInfo = useMemo(() => ClassUtils.getClassInfo(selectedClass), [selectedClass]);
 
-  useEffect(() => {
-    localStorage.setItem(`${slot}.selectedClass`, JSON.stringify(selectedClass));
-  }, [selectedClass]);
-  useEffect(() => {
-    localStorage.setItem(`${slot}.weapon`, JSON.stringify(weapon));
-  }, [weapon]);
-  useEffect(() => {
-    localStorage.setItem(`${slot}.stats`, JSON.stringify(stats));
-  }, [stats]);
-  useEffect(() => {
-    localStorage.setItem('slot', JSON.stringify(slot));
-
-    setSelectedClass(localStorage.getItem(`${slot}.selectedClass`) ? JSON.parse(localStorage.getItem(`${slot}.selectedClass`)) : 'Adele');
-    setWeapon(localStorage.getItem(`${slot}.weapon`) ? JSON.parse(localStorage.getItem(`${slot}.weapon`)) : 'Bladecaster');
-    setStats({...(localStorage.getItem(`${slot}.stats`) ? JSON.parse(localStorage.getItem(`${slot}.stats`)) : ClassUtils.initializeStats())});
-    setStatEquivalence(ClassUtils.initializeStats);
-  }, [slot]);
+  useEffect(
+    () => { localStorage.setItem(`${slot}.selectedClass`, JSON.stringify(selectedClass)) },
+    [selectedClass]
+  );
+  useEffect(
+    () => { localStorage.setItem(`${slot}.weapon`, JSON.stringify(weapon)) },
+    [weapon]
+  );
+  useEffect(
+    () => { localStorage.setItem('slot', JSON.stringify(slot)) },
+    [slot]
+  );
+  useEffect(
+    () => { localStorage.setItem(`${slot}.stats`, JSON.stringify(stats)) },
+    [stats]
+  );
 
   const handleSubmit = (event) => {
     event.preventDefault();
@@ -106,9 +101,9 @@ function StatEquivalence() {
     );
 
     setStatEquivalence({
-      percentAllEquivalences: calculated.percentRatios.map((p, i) => p / calculated.primaryRatios[i]),//calculated.percentRatios[0] / calculated.primaryRatios[0],
-      attackEquivalences: calculated.attackRatio / calculated.primaryRatios.reduce((a, b) => a + b, 0),// calculated.primaryRatios.map(r => calculated.attackRatio / r),
-      secondaryEquivalences: calculated.secondaryRatios.map(s => calculated.primaryRatios[0] / (s / 4.0)), // TODO: fix
+      percentAllEquivalences: calculated.percentRatios.map((p, i) => p / calculated.primaryRatios[i]),
+      attackEquivalences: calculated.attackRatio / calculated.primaryRatios.reduce((a, b) => a + b, 0),
+      secondaryEquivalences: calculated.secondaryRatios.map(s => calculated.primaryRatios[0] / (s / 4.0)),
     });
 
     console.log('form data');
@@ -123,7 +118,17 @@ function StatEquivalence() {
 
   const handleReset = (_event) => {
     setStats(ClassUtils.initializeStats);
+    setSelectedClass('Adele');
+    setWeapon('Bladecaster');
     setStatImage(null);
+  }
+
+  const changeSlot = (newSlot) => {
+    setSelectedClass(localStorage.getItem(`${newSlot}.selectedClass`) ? JSON.parse(localStorage.getItem(`${newSlot}.selectedClass`)) : 'Adele');
+    setWeapon(localStorage.getItem(`${newSlot}.weapon`) ? JSON.parse(localStorage.getItem(`${newSlot}.weapon`)) : 'Bladecaster');
+    setStats(localStorage.getItem(`${newSlot}.stats`) ? JSON.parse(localStorage.getItem(`${newSlot}.stats`)) : ClassUtils.initializeStats());
+    setStatEquivalence(ClassUtils.initializeStatEquivalence);
+    setSlot(newSlot);
   }
 
   async function handleStatWindowImageChange(e) {
@@ -143,7 +148,7 @@ function StatEquivalence() {
         <Navbar>
           <Container>
             Slots:
-            <Nav variant="pills" className="me-auto" onSelect={setSlot} defaultActiveKey={slot}>
+            <Nav variant="pills" className="me-auto" onSelect={changeSlot} defaultActiveKey={slot}>
               <Nav.Item>
                 <Nav.Link eventKey="character-slot-1">1</Nav.Link>
               </Nav.Item>
@@ -176,7 +181,7 @@ function StatEquivalence() {
           </Container>
           : null
         }
-        <Form onSubmit={handleSubmit}>
+        <Form key={slot} onSubmit={handleSubmit}>
           <Container>
             <Row><Col><h4><u>Character Info</u></h4></Col></Row>
             <Row>

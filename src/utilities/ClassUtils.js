@@ -28,6 +28,14 @@ export default class ClassUtils {
   static initializeStats() {
     return initialStats;
   }
+
+  static initializeStatEquivalence() {
+    return {
+      attackEquivalences: null,
+      secondaryEquivalences: null,
+      percentAllEquivalences: null
+    };
+  }
 }
 
 let classes = {
