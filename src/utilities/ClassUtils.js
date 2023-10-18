@@ -375,8 +375,14 @@ let weapons = {
 
 let initialStats = {
   level: 0,
-  hp: 0,
-  mp: 0,
+  hp: {
+    total: 0,
+    percent: 0
+  },
+  mp: {
+    total: 0,
+    percent: 0
+  },
   upperShownDmgRange: 0,
   STR: {
     total: 0,

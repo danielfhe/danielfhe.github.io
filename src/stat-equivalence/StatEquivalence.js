@@ -81,7 +81,7 @@ function StatEquivalence() {
       stats.familiars.potentialAttPercentSum + stats.bonusPotentialAtt + classInfo.attPercent + FormulaUtils.getWeaponSecondaryEmblemAttack(stats);
     // 100 + soul + familiar badges + familiar potential + bonus potential att % (non-reboot) + class att % + attack from WSE
     calculated.statValue = FormulaUtils.getStatValue(selectedClass, calculated.primaryStats, calculated.secondaryStats);
-    calculated.totalJobAttack = FormulaUtils.getTotalJobAttack(stats.upperShownDmgRange, weaponMultiplier, calculated.statValue, stats.dmgPercent, stats.finalDmg)
+    calculated.totalJobAttack = FormulaUtils.getTotalJobAttack(selectedClass, stats.upperShownDmgRange, weaponMultiplier, calculated.statValue, stats.dmgPercent, stats.finalDmg, stats.hp.total);
     calculated.attack = Math.floor(calculated.totalJobAttack / (calculated.attackPercent / 100));
 
     calculated.finalStatPrimaries = calculated.hyperStatPrimaries.map((h, i) => (30 * h) + calculated.symbolPrimaries[i] + calculated.legionPrimaries[i]);//(30 * calculated.hyperStatPrimaries[0]) + calculated.symbolPrimaries[0] + calculated.legionPrimaries[0];
@@ -195,8 +195,8 @@ function StatEquivalence() {
               <HideableStatColumn label={'DEX'} stat={stats.DEX.total} type={'number'} setStatValue={s => {setStats({...stats, DEX: {...stats.DEX, total: Number(s)}})}} shouldShow={classInfo.primary.concat(classInfo.secondary).includes('DEX')}/>
               <HideableStatColumn label={'LUK'} stat={stats.LUK.total} type={'number'} setStatValue={s => {setStats({...stats, LUK: {...stats.LUK, total: Number(s)}})}} shouldShow={classInfo.primary.concat(classInfo.secondary).includes('LUK')}/>
               <HideableStatColumn label={'INT'} stat={stats.INT.total} type={'number'} setStatValue={s => {setStats({...stats, INT: {...stats.INT, total: Number(s)}})}} shouldShow={classInfo.primary.concat(classInfo.secondary).includes('INT')}/>
-              <HideableStatColumn label={'HP'} stat={stats.hp} type={'number'} setStatValue={s => {setStats({...stats, hp: Number(s)})}} shouldShow={selectedClass === 'Demon Avenger'}/>
-              <HideableStatColumn label={'MP'} stat={stats.mp} type={'number'} setStatValue={s => {setStats({...stats, mp: Number(s)})}} shouldShow={selectedClass === 'Kanna'}/>
+              <HideableStatColumn label={'HP'} stat={stats.hp.total} type={'number'} setStatValue={s => {setStats({...stats, hp: {total: Number(s)}})}} shouldShow={['Demon Avenger', 'Kanna'].includes(selectedClass)}/>
+              <HideableStatColumn label={'MP'} stat={stats.mp.total} type={'number'} setStatValue={s => {setStats({...stats, mp: {total: Number(s)}})}} shouldShow={false}/>
             </Row>
             {/* <Row>
               <HideableStatColumn label={'STR AP'} stat={stats.STR.total} type={'number'} setStatValue={s => {setStats({...stats, STR: {...stats.STR, ap: Number(s)}})}} shouldShow={classInfo.primary.concat(classInfo.secondary).includes('STR')}/>
@@ -210,6 +210,8 @@ function StatEquivalence() {
               <HideableStatColumn label={'LUK% on equips'} stat={stats.LUK.percent} type={'number'} setStatValue={s => {setStats({...stats, LUK: {...stats.LUK, percent: Number(s)}})}} shouldShow={classInfo.primary.concat(classInfo.secondary).includes('LUK')}/>
               <HideableStatColumn label={'INT% on equips'} stat={stats.INT.percent} type={'number'} setStatValue={s => {setStats({...stats, INT: {...stats.INT, percent: Number(s)}})}} shouldShow={classInfo.primary.concat(classInfo.secondary).includes('INT')}/>
               <Col><StatBox label={'All stat% on equips'} stat={stats.percentAllStat} type={'number'} setStatValue={s => {setStats({...stats, percentAllStat: Number(s)})}}/></Col>
+              {/* <HideableStatColumn label={'HP% on equips'} stat={stats.hp.percent} type={'number'} setStatValue={s => {setStats({...stats, hp: {...stats.hp, percent: Number(s)}})}} shouldShow={['Demon Avenger', 'Kanna'].includes(selectedClass)}/>
+              <HideableStatColumn label={'MP% on equips'} stat={stats.mp.percent} type={'number'} setStatValue={s => {setStats({...stats, mp: {...stats.mp, percent: Number(s)}})}} shouldShow={['Kanna'].includes(selectedClass)}/> */}
             </Row>
             <Row>
               <Col md={3}><StatBox label={'Damage %'} stat={stats.dmgPercent} type={'number'} setStatValue={s => {setStats({...stats, dmgPercent: Number(s)})}}/></Col>

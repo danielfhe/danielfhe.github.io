@@ -10,8 +10,14 @@ export default class FormulaUtils {
     return (4 * primaryStatsSum) + secondaryStatsSum;
   }
 
-  static getTotalJobAttack(upperShownDmgRange, weaponMultiplier, statValue, dmgPercent, finalDmgPercent) {
-    return (100.0 * upperShownDmgRange) / ((weaponMultiplier * statValue) * (1 + (dmgPercent / 100.0)) * (1 + (finalDmgPercent / 100.0)));
+  static getTotalJobAttack(selectedClass, upperShownDmgRange, weaponMultiplier, statValue, dmgPercent, finalDmgPercent, hp) {
+    // the next 3 lines account for the double counting of Kanna's Blessing of the 5 Elements Beginner skill and Kasen 4th job skill 
+    // in the stat window damage range
+    let dmgPercentModifier = selectedClass === 'Kanna' ? 30.0 : 0.0;
+    hp = hp > 500000 ? 500000 : hp;
+    let totalJobAttackModifier = selectedClass === 'Kanna' ? Math.floor(hp / 700.0) : 0.0;
+
+    return (100.0 * upperShownDmgRange) / ((weaponMultiplier * statValue) * (1 + ((dmgPercent + dmgPercentModifier) / 100.0)) * (1 + (finalDmgPercent / 100.0))) - totalJobAttackModifier;
   }
 
   static getPrimaryPotentialOptions(isHighLevel) {
