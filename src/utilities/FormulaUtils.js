@@ -3,7 +3,7 @@ export default class FormulaUtils {
     let primaryStatsSum = primaryStats.reduce((a, b) => a + b, 0);
     let secondaryStatsSum = secondaryStats.reduce((a, b) => a + b, 0);
     if(className === "Demon Avenger") {
-      const pureHp = 545.0 + (90 * level); // 4th job and above
+      const pureHp = 545.0 + (90.0 * level); // 4th job and above
       return Math.floor(pureHp / 3.5) + (0.8 * Math.floor(primaryStatsSum - pureHp) / 3.5) + secondaryStatsSum;
     }
 
@@ -13,6 +13,7 @@ export default class FormulaUtils {
   static getTotalJobAttack(selectedClass, upperShownDmgRange, weaponMultiplier, statValue, dmgPercent, finalDmgPercent, hp) {
     // the next 3 lines account for the double counting of Kanna's Blessing of the 5 Elements Beginner skill and Kasen 4th job skill 
     // in the stat window damage range
+    // https://www.reddit.com/r/Maplestory/comments/rl14bf/what_you_should_know_about_kannas_stats_damage/
     let dmgPercentModifier = selectedClass === 'Kanna' ? 30.0 : 0.0;
     hp = hp > 500000 ? 500000 : hp;
     let totalJobAttackModifier = selectedClass === 'Kanna' ? Math.floor(hp / 700.0) : 0.0;

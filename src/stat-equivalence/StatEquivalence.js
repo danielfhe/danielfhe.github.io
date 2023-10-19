@@ -69,7 +69,7 @@ function StatEquivalence() {
     calculated.secondaryStats = classInfo.secondary.map(statName => stats[statName].total);
     // calculated.primaryStatAPs = classInfo.primary.map(statName => stats[statName].ap);
     // calculated.secondaryStatAPs = classInfo.secondary.map(statName => stats[statName].ap);
-    calculated.primaryStatPercents = classInfo.primary.map(statName => stats[statName].percent + stats.percentAllStat);
+    calculated.primaryStatPercents = classInfo.primary.map(statName => stats[statName].percent + stats.percentAllStat + (statName === 'HP' ? stats.hyper[statName] * 2.0 : 0));
     calculated.secondaryStatPercents = classInfo.secondary.map(statName => stats[statName].percent + stats.percentAllStat);
     calculated.hyperStatPrimaries = classInfo.primary.map(statName => stats.hyper[statName]);
     calculated.hyperStatSecondaries = classInfo.secondary.map(statName => stats.hyper[statName]);
@@ -80,11 +80,11 @@ function StatEquivalence() {
     calculated.attackPercent = 100.0 + (stats.magnificentSoul ? 3 : 0) + stats.familiars.badgeAttPercentSum + 
       stats.familiars.potentialAttPercentSum + stats.bonusPotentialAtt + classInfo.attPercent + FormulaUtils.getWeaponSecondaryEmblemAttack(stats);
     // 100 + soul + familiar badges + familiar potential + bonus potential att % (non-reboot) + class att % + attack from WSE
-    calculated.statValue = FormulaUtils.getStatValue(selectedClass, calculated.primaryStats, calculated.secondaryStats);
-    calculated.totalJobAttack = FormulaUtils.getTotalJobAttack(selectedClass, stats.upperShownDmgRange, weaponMultiplier, calculated.statValue, stats.dmgPercent, stats.finalDmg, stats.hp.total);
-    calculated.attack = Math.floor(calculated.totalJobAttack / (calculated.attackPercent / 100));
+    calculated.statValue = FormulaUtils.getStatValue(selectedClass, calculated.primaryStats, calculated.secondaryStats, stats.level);
+    calculated.totalJobAttack = FormulaUtils.getTotalJobAttack(selectedClass, stats.upperShownDmgRange, weaponMultiplier, calculated.statValue, stats.dmgPercent, stats.finalDmg, stats.HP.total);
+    calculated.baseAttack = Math.floor(calculated.totalJobAttack / (calculated.attackPercent / 100));
 
-    calculated.finalStatPrimaries = calculated.hyperStatPrimaries.map((h, i) => (30 * h) + calculated.symbolPrimaries[i] + calculated.legionPrimaries[i]);//(30 * calculated.hyperStatPrimaries[0]) + calculated.symbolPrimaries[0] + calculated.legionPrimaries[0];
+    calculated.finalStatPrimaries = calculated.hyperStatPrimaries.map((h, i) => (classInfo.primary[i] === 'HP' ? 0 : (30 * h)) + calculated.symbolPrimaries[i] + calculated.legionPrimaries[i]);
     calculated.finalStatSecondaries = calculated.hyperStatSecondaries.map((h, i) => (30 * h) + calculated.legionSecondaries[i]);
     calculated.primaryBaseTotalStats = calculated.primaryStats.map((s, i) => (s - calculated.finalStatPrimaries[i]) / (1.0 + (calculated.primaryStatPercents[i] / 100.0)));
     calculated.secondaryBaseTotalStats = calculated.secondaryStats.map((s, i) => (s - calculated.finalStatSecondaries[i]) / (1.0 + (calculated.secondaryStatPercents[i] / 100.0)));
@@ -95,23 +95,31 @@ function StatEquivalence() {
     calculated.percentRatios = calculated.primaryBaseTotalStats.map((s, i) => 
       s * (1 + (calculated.primaryStatPercents[i] + 1)/ 100.0) + calculated.finalStatPrimaries[i] - calculated.primaryStats[i]
     );
-    calculated.attackRatio = (calculated.primaryStats.reduce((a, b) => a + b, 0) + calculated.secondaryStats.reduce((a, b) => a + b, 0) / 4.0) / calculated.attack;
+    calculated.attackRatio = (calculated.primaryStats.reduce((a, b) => a + b, 0) + calculated.secondaryStats.reduce((a, b) => a + b, 0) / 4.0) / calculated.baseAttack;
     calculated.secondaryRatios = calculated.secondaryBaseTotalStats.map((s, i) => 
       (s + 1) * (1 + calculated.secondaryStatPercents[i]/ 100.0) + calculated.finalStatSecondaries[i] - calculated.secondaryStats[i]
     );
+
+    let statValues = {
+      attack: 1.0 / calculated.totalJobAttack * calculated.statValue,
+      primary: calculated.primaryStatPercents.map(p => (1 + p / 100.0) * 4),
+      secondary: calculated.secondaryStatPercents.map(s => 1 + s / 100.0),
+      primaryPercent: calculated.primaryBaseTotalStats.map(p => p / 100.0 * 4),
+      secondaryPercent: calculated.secondaryBaseTotalStats.map(s => s / 100.0)
+    }
 
     setStatEquivalence({
       percentAllEquivalences: calculated.percentRatios.map((p, i) => p / calculated.primaryRatios[i]),
       attackEquivalences: calculated.attackRatio / calculated.primaryRatios.reduce((a, b) => a + b, 0),
       secondaryEquivalences: calculated.secondaryRatios.map(s => calculated.primaryRatios[0] / (s / 4.0)),
+      statValue: calculated.statValue
     });
 
     console.log('form data');
     console.log(stats);
-    console.log(`class: ${selectedClass}`);
-    console.log(`weapon: ${weapon}`);
     console.log(calculated);
     console.log(statEquivalence);
+    console.log(statValues);
 
     window.scrollTo(0, 0);
   }
@@ -171,13 +179,16 @@ function StatEquivalence() {
             {
               classInfo.primary.map((pri, i) =>
                 <>
-                <Row key={`${pri}-all-stat`}><Col><label>1% All Stat &lt;=&gt;</label> {statEquivalence.percentAllEquivalences[i].toFixed(2)} {pri}</Col></Row>
+                {selectedClass !== 'Demon Avenger' &&
+                  <Row key={`${pri}-all-stat`}><Col><label>1% All Stat &lt;=&gt;</label> {statEquivalence.percentAllEquivalences[i].toFixed(2)} {pri}</Col></Row>
+                }
                 {statEquivalence.secondaryEquivalences.map((sec, j) => 
                   <Row key={`${pri}-${sec}`}><Col><label>{sec.toFixed(2)} {classInfo.secondary[j]} &lt;=&gt;</label> 1 {pri}</Col></Row>
                 )}
                 </>
               )
             }
+            <Row><Col>Stat Value: {statEquivalence.statValue.toLocaleString('en-US', {maximumFractionDigits: 2})}</Col></Row>
           </Container>
           : null
         }
@@ -195,8 +206,8 @@ function StatEquivalence() {
               <HideableStatColumn label={'DEX'} stat={stats.DEX.total} type={'number'} setStatValue={s => {setStats({...stats, DEX: {...stats.DEX, total: Number(s)}})}} shouldShow={classInfo.primary.concat(classInfo.secondary).includes('DEX')}/>
               <HideableStatColumn label={'LUK'} stat={stats.LUK.total} type={'number'} setStatValue={s => {setStats({...stats, LUK: {...stats.LUK, total: Number(s)}})}} shouldShow={classInfo.primary.concat(classInfo.secondary).includes('LUK')}/>
               <HideableStatColumn label={'INT'} stat={stats.INT.total} type={'number'} setStatValue={s => {setStats({...stats, INT: {...stats.INT, total: Number(s)}})}} shouldShow={classInfo.primary.concat(classInfo.secondary).includes('INT')}/>
-              <HideableStatColumn label={'HP'} stat={stats.hp.total} type={'number'} setStatValue={s => {setStats({...stats, hp: {total: Number(s)}})}} shouldShow={['Demon Avenger', 'Kanna'].includes(selectedClass)}/>
-              <HideableStatColumn label={'MP'} stat={stats.mp.total} type={'number'} setStatValue={s => {setStats({...stats, mp: {total: Number(s)}})}} shouldShow={false}/>
+              <HideableStatColumn label={'HP'} stat={stats.HP.total} type={'number'} setStatValue={s => {setStats({...stats, HP: {...stats.HP, total: Number(s)}})}} shouldShow={['Demon Avenger', 'Kanna'].includes(selectedClass)}/>
+              <HideableStatColumn label={'MP'} stat={stats.MP.total} type={'number'} setStatValue={s => {setStats({...stats, MP: {...stats.MP, total: Number(s)}})}} shouldShow={false}/>
             </Row>
             {/* <Row>
               <HideableStatColumn label={'STR AP'} stat={stats.STR.total} type={'number'} setStatValue={s => {setStats({...stats, STR: {...stats.STR, ap: Number(s)}})}} shouldShow={classInfo.primary.concat(classInfo.secondary).includes('STR')}/>
@@ -209,9 +220,9 @@ function StatEquivalence() {
               <HideableStatColumn label={'DEX% on equips'} stat={stats.DEX.percent} type={'number'} setStatValue={s => {setStats({...stats, DEX: {...stats.DEX, percent: Number(s)}})}} shouldShow={classInfo.primary.concat(classInfo.secondary).includes('DEX')}/>
               <HideableStatColumn label={'LUK% on equips'} stat={stats.LUK.percent} type={'number'} setStatValue={s => {setStats({...stats, LUK: {...stats.LUK, percent: Number(s)}})}} shouldShow={classInfo.primary.concat(classInfo.secondary).includes('LUK')}/>
               <HideableStatColumn label={'INT% on equips'} stat={stats.INT.percent} type={'number'} setStatValue={s => {setStats({...stats, INT: {...stats.INT, percent: Number(s)}})}} shouldShow={classInfo.primary.concat(classInfo.secondary).includes('INT')}/>
-              <Col><StatBox label={'All stat% on equips'} stat={stats.percentAllStat} type={'number'} setStatValue={s => {setStats({...stats, percentAllStat: Number(s)})}}/></Col>
-              {/* <HideableStatColumn label={'HP% on equips'} stat={stats.hp.percent} type={'number'} setStatValue={s => {setStats({...stats, hp: {...stats.hp, percent: Number(s)}})}} shouldShow={['Demon Avenger', 'Kanna'].includes(selectedClass)}/>
-              <HideableStatColumn label={'MP% on equips'} stat={stats.mp.percent} type={'number'} setStatValue={s => {setStats({...stats, mp: {...stats.mp, percent: Number(s)}})}} shouldShow={['Kanna'].includes(selectedClass)}/> */}
+              <HideableStatColumn label={'All stat% on equips'} stat={stats.percentAllStat} type={'number'} setStatValue={s => {setStats({...stats, percentAllStat: Number(s)})}} shouldShow={true}/>
+              <HideableStatColumn label={'HP% on equips'} stat={stats.HP.percent} type={'number'} setStatValue={s => {setStats({...stats, HP: {...stats.HP, percent: Number(s)}})}} shouldShow={['Demon Avenger'].includes(selectedClass)}/>
+              {/* <HideableStatColumn label={'MP% on equips'} stat={stats.MP.percent} type={'number'} setStatValue={s => {setStats({...stats, MP: {...stats.MP, percent: Number(s)}})}} shouldShow={['Kanna'].includes(selectedClass)}/> */}
             </Row>
             <Row>
               <Col md={3}><StatBox label={'Damage %'} stat={stats.dmgPercent} type={'number'} setStatValue={s => {setStats({...stats, dmgPercent: Number(s)})}}/></Col>
@@ -222,6 +233,7 @@ function StatEquivalence() {
               <HideableStatColumn label={'DEX from Arcane/Sacred symbols'} stat={stats.symbols.DEX} type={'number'} setStatValue={s => {setStats({...stats, symbols: {...stats.symbols, DEX: Number(s)}})}} shouldShow={classInfo.primary.includes('DEX')}/>
               <HideableStatColumn label={'LUK from Arcane/Sacred symbols'} stat={stats.symbols.LUK} type={'number'} setStatValue={s => {setStats({...stats, symbols: {...stats.symbols, LUK: Number(s)}})}} shouldShow={classInfo.primary.includes('LUK')}/>
               <HideableStatColumn label={'INT from Arcane/Sacred symbols'} stat={stats.symbols.INT} type={'number'} setStatValue={s => {setStats({...stats, symbols: {...stats.symbols, INT: Number(s)}})}} shouldShow={classInfo.primary.includes('INT')}/>
+              <HideableStatColumn label={'HP from Arcane/Sacred symbols'} stat={stats.symbols.HP} type={'number'} setStatValue={s => {setStats({...stats, symbols: {...stats.symbols, HP: Number(s)}})}} shouldShow={classInfo.primary.includes('HP')}/>
             </Row>
             <Row><Col><h4><u>Legion</u></h4></Col></Row>
             <Row>
@@ -229,6 +241,7 @@ function StatEquivalence() {
               <HideableStatColumn label={'DEX from member bonus'} stat={stats.legion.DEX} type={'number'} setStatValue={s => {setStats({...stats, legion: {...stats.legion, DEX: Number(s)}})}} shouldShow={classInfo.primary.concat(classInfo.secondary).includes('DEX')}/>
               <HideableStatColumn label={'LUK from member bonus'} stat={stats.legion.LUK} type={'number'} setStatValue={s => {setStats({...stats, legion: {...stats.legion, LUK: Number(s)}})}} shouldShow={classInfo.primary.concat(classInfo.secondary).includes('LUK')}/>
               <HideableStatColumn label={'INT from member bonus'} stat={stats.legion.INT} type={'number'} setStatValue={s => {setStats({...stats, legion: {...stats.legion, INT: Number(s)}})}} shouldShow={classInfo.primary.concat(classInfo.secondary).includes('INT')}/>
+              <HideableStatColumn label={'HP from member bonus'} stat={stats.legion.HP} type={'number'} setStatValue={s => {setStats({...stats, legion: {...stats.legion, HP: Number(s)}})}} shouldShow={classInfo.primary.concat(classInfo.secondary).includes('HP')}/>
             </Row>
             <Row><Col><h4><u>Equipment</u></h4></Col></Row>
             <Row>
@@ -277,6 +290,7 @@ function StatEquivalence() {
             </Row>
             <Row>
               <Col></Col>
+              {/* <HideableStatColumn label={'HP %'} stat={stats.familiars.STR} type={'number'} setStatValue={s => {setStats({...stats, legion: {...stats.legion, STR: Number(s)}})}} shouldShow={selectedClass === 'Demon Avenger'}/> */}
               <Col><StatBox label={'Primary Stat %'} stat={stats.familiars.potentialPrimaryPercentSum} type={'number'} setStatValue={s => {setStats({...stats, familiars: {...stats.familiars, potentialPrimaryPercentSum: Number(s)}})}}/></Col>
             </Row>
             <br/>

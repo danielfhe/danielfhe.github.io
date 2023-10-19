@@ -14,8 +14,8 @@ export default function HyperStats({ stats, setStats }) {
       <HyperStatDropdownSelector label={'DEX'} optionsList={getOptionsList(16)} selected={stats.hyper.DEX} setSelected={s => {setStats({...stats, hyper: {...stats.hyper, DEX: s}})}}/>
       <HyperStatDropdownSelector label={'LUK'} optionsList={getOptionsList(16)} selected={stats.hyper.LUK} setSelected={s => {setStats({...stats, hyper: {...stats.hyper, LUK: s}})}}/>
       <HyperStatDropdownSelector label={'INT'} optionsList={getOptionsList(16)} selected={stats.hyper.INT} setSelected={s => {setStats({...stats, hyper: {...stats.hyper, INT: s}})}}/>
-      <HyperStatDropdownSelector label={'HP'} optionsList={getOptionsList(16)} selected={stats.hyper.hp} setSelected={s => {setStats({...stats, hyper: {...stats.hyper, hp: s}})}}/>
-      <HyperStatDropdownSelector label={'MP'} optionsList={getOptionsList(16)} selected={stats.hyper.mp} setSelected={s => {setStats({...stats, hyper: {...stats.hyper, mp: s}})}}/>
+      <HyperStatDropdownSelector label={'HP'} optionsList={getOptionsList(16)} selected={stats.hyper.HP} setSelected={s => {setStats({...stats, hyper: {...stats.hyper, HP: s}})}}/>
+      <HyperStatDropdownSelector label={'MP'} optionsList={getOptionsList(16)} selected={stats.hyper.MP} setSelected={s => {setStats({...stats, hyper: {...stats.hyper, MP: s}})}}/>
       <HyperStatDropdownSelector label={'DF/TF/Mana'} optionsList={getOptionsList(11)} selected={stats.hyper.dftfmana} setSelected={s => {setStats({...stats, hyper: {...stats.hyper, dftfmana: s}})}}/>
       <HyperStatDropdownSelector label={'Critical Rate'} optionsList={getOptionsList(16)} selected={stats.hyper.critRate} setSelected={s => {setStats({...stats, hyper: {...stats.hyper, critRate: s}})}}/>
       <HyperStatDropdownSelector label={'Critical Damage'} optionsList={getOptionsList(16)} selected={stats.hyper.critDmg} setSelected={s => {setStats({...stats, hyper: {...stats.hyper, critDmg: s}})}}/>

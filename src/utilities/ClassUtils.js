@@ -33,7 +33,8 @@ export default class ClassUtils {
     return {
       attackEquivalences: null,
       secondaryEquivalences: null,
-      percentAllEquivalences: null
+      percentAllEquivalences: null,
+      statValue: null
     };
   }
 }
@@ -375,11 +376,11 @@ let weapons = {
 
 let initialStats = {
   level: 0,
-  hp: {
+  HP: {
     total: 0,
     percent: 0
   },
-  mp: {
+  MP: {
     total: 0,
     percent: 0
   },
@@ -416,7 +417,8 @@ let initialStats = {
     STR: 0,
     DEX: 0,
     LUK: 0,
-    INT: 0
+    INT: 0,
+    HP: 0
   },
   bonusPotentialAtt: 0,
   magnificentSoul: false,
@@ -443,8 +445,8 @@ let initialStats = {
     DEX: 0,
     LUK: 0,
     INT: 0,
-    hp: 0,
-    mp: 0,
+    HP: 0,
+    MP: 0,
     dftfmana: 0,
     critRate: 0,
     critDmg: 0,
@@ -461,7 +463,8 @@ let initialStats = {
     STR: 0,
     DEX: 0,
     LUK: 0,
-    INT: 0
+    INT: 0,
+    HP: 0
   },
   familiars: {
     badgeAttPercentSum: 0,
