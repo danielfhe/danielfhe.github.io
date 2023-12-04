@@ -69,7 +69,7 @@ function StatEquivalence() {
     calculated.secondaryStats = classInfo.secondary.map(statName => stats[statName].total);
     // calculated.primaryStatAPs = classInfo.primary.map(statName => stats[statName].ap);
     // calculated.secondaryStatAPs = classInfo.secondary.map(statName => stats[statName].ap);
-    calculated.primaryStatPercents = classInfo.primary.map(statName => stats[statName].percent + stats.percentAllStat + (statName === 'HP' ? stats.hyper[statName] * 2.0 : 0));
+    calculated.primaryStatPercents = classInfo.primary.map(statName => stats[statName].percent + (statName === 'HP' ? 0 : stats.percentAllStat) + (statName === 'HP' ? stats.hyper[statName] * 2.0 : 0));
     calculated.secondaryStatPercents = classInfo.secondary.map(statName => stats[statName].percent + stats.percentAllStat);
     calculated.hyperStatPrimaries = classInfo.primary.map(statName => stats.hyper[statName]);
     calculated.hyperStatSecondaries = classInfo.secondary.map(statName => stats.hyper[statName]);
