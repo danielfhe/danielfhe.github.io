@@ -69,8 +69,9 @@ function StatEquivalence() {
     calculated.secondaryStats = classInfo.secondary.map(statName => stats[statName].total);
     // calculated.primaryStatAPs = classInfo.primary.map(statName => stats[statName].ap);
     // calculated.secondaryStatAPs = classInfo.secondary.map(statName => stats[statName].ap);
-    calculated.primaryStatPercents = classInfo.primary.map(statName => stats[statName].percent + (statName === 'HP' ? 0 : stats.percentAllStat) + (statName === 'HP' ? stats.hyper[statName] * 2.0 : 0));
-    calculated.secondaryStatPercents = classInfo.secondary.map(statName => stats[statName].percent + stats.percentAllStat);
+    calculated.percentAllStatSum = stats.percentAllStat + stats.familiars.badgeAllStatPercentSum + stats.familiars.potentialAllStatPercentSum;
+    calculated.primaryStatPercents = classInfo.primary.map(statName => stats[statName].percent + (statName === 'HP' ? 0 : calculated.percentAllStatSum) + (statName === 'HP' ? stats.hyper[statName] * 2.0 : 0));
+    calculated.secondaryStatPercents = classInfo.secondary.map(statName => stats[statName].percent + calculated.percentAllStatSum + calculated.familiars.potentialSecondaryPercentSum);
     calculated.hyperStatPrimaries = classInfo.primary.map(statName => stats.hyper[statName]);
     calculated.hyperStatSecondaries = classInfo.secondary.map(statName => stats.hyper[statName]);
     calculated.symbolPrimaries = classInfo.primary.map(statName => stats.symbols[statName]);
@@ -279,7 +280,7 @@ function StatEquivalence() {
               <Col><input id="magnificentSoul" type="checkbox" checked={stats.magnificentSoul} onChange={_s => {setStats({...stats, magnificentSoul: !stats.magnificentSoul})}}/> <label for="magnificentSoul">Magnificent (ATT +3%)</label></Col>
             </Row>
             <Row><Col><h4><u>Familiars</u></h4></Col></Row>
-            <Row><Col><h5>Badge Effect</h5></Col><Col><h5>Potentials</h5></Col></Row>
+            <Row><Col><h5>Badge</h5></Col><Col><h5>Potentials</h5></Col></Row>
             <Row>
               <Col><StatBox label={'Attack %'} stat={stats.familiars.badgeAttPercentSum} type={'number'} setStatValue={s => {setStats({...stats, familiars: {...stats.familiars, badgeAttPercentSum: Number(s)}})}}/></Col>
               <Col><StatBox label={'Attack %'} stat={stats.familiars.potentialAttPercentSum} type={'number'} setStatValue={s => {setStats({...stats, familiars: {...stats.familiars, potentialAttPercentSum: Number(s)}})}}/></Col>
@@ -289,9 +290,12 @@ function StatEquivalence() {
               <Col><StatBox label={'All Stat %'} stat={stats.familiars.potentialAllStatPercentSum} type={'number'} setStatValue={s => {setStats({...stats, familiars: {...stats.familiars, potentialAllStatPercentSum: Number(s)}})}}/></Col>
             </Row>
             <Row>
-              <Col></Col>
-              {/* <HideableStatColumn label={'HP %'} stat={stats.familiars.STR} type={'number'} setStatValue={s => {setStats({...stats, legion: {...stats.legion, STR: Number(s)}})}} shouldShow={selectedClass === 'Demon Avenger'}/> */}
+              <HideableStatColumn label={'Primary Stat %'} stat={stats.familiars.badgeHpPercentSum} type={'number'} setStatValue={s => {setStats({...stats, familiars: {...stats.familiars, badgeHpPercentSum: Number(s)}})}} shouldShow={selectedClass === 'Demon Avenger'} width={6}/>
               <Col><StatBox label={'Primary Stat %'} stat={stats.familiars.potentialPrimaryPercentSum} type={'number'} setStatValue={s => {setStats({...stats, familiars: {...stats.familiars, potentialPrimaryPercentSum: Number(s)}})}}/></Col>
+            </Row>
+            <Row>
+              <Col></Col>
+              <Col><StatBox label={'Secondary Stat %'} stat={stats.familiars.potentialSecondaryPercentSum} type={'number'} setStatValue={s => {setStats({...stats, familiars: {...stats.familiars, potentialSecondaryPercentSum: Number(s)}})}}/></Col>
             </Row>
             <br/>
             {/* <Row className="mb-3">

@@ -469,8 +469,11 @@ let initialStats = {
   familiars: {
     badgeAttPercentSum: 0,
     badgeAllStatPercentSum: 0,
+    badgeHpPercentSum: 0,
     potentialAttPercentSum: 0,
+    potentialAllStatPercentSum: 0,
     potentialPrimaryPercentSum: 0,
-    potentialAllStatPercentSum: 0
+    potentialHpPercentSum: 0,
+    potentialSecondaryPercentSum: 0
   }
 };
