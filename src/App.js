@@ -1,3 +1,4 @@
+import { Button, Card } from 'react-bootstrap';
 import './App.css';
 import HeadingBar from './components/HeadingBar';
 import { Link } from 'react-router-dom';
@@ -17,9 +18,12 @@ function App() {
 
 const ToolBox = ({ toolName, toolUrl }) => {
   return (
-    <div className="tool-box">
-      <Link to={toolUrl}>{toolName}</Link>
-    </div>
+    <Card bg={'light'} className='tool-box'>
+      <Card.Body style={{width: '100%'}}>
+        <Card.Title>{toolName}</Card.Title>
+        <Button className="d-grid" variant='secondary' as={Link} to={toolUrl}>Calculator</Button>
+      </Card.Body>
+    </Card>
   );
 };
 
